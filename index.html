@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GEB | Reclutamiento y Selección</title>
+<style>
+:root{
+  --bg:#F6F1E8; --card:#FFFFFF; --ink:#17212B; --muted:#6B7280; --line:#E5DED3;
+  --green:#18A672; --yellow:#F2B544; --red:#E5484D; --blue:#1683B5;
+  --easy:#FF6B00; --vivo:#198754; --center:#9ACD32; --onara:#161616; --clinica:#FF5149; --eys:#8752E8; --acton:#13B5E6;
+  --shadow:0 8px 24px rgba(25,30,35,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+header{position:sticky;top:0;z-index:20;background:#123D31;color:white;border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 26px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:21px}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:#F4B841;color:#123D31;display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
+.top-actions{display:flex;gap:10px;align-items:center}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn.primary{background:#F4B841;color:#17372F}.btn.ghost{background:rgba(255,255,255,.1);color:#fff}
+.tabs{height:45px;padding:0 26px;display:flex;gap:6px;align-items:flex-end}
+.tab{border:0;background:transparent;color:#DCE9E4;padding:11px 15px;border-radius:10px 10px 0 0;font-weight:700;cursor:pointer}
+.tab.active{background:var(--bg);color:var(--ink)}
+main{padding:18px 14px 40px;max-width:1600px;margin:auto}
+.filters{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:10px;margin-bottom:14px}
+.filter{background:white;border:1px solid var(--line);border-radius:12px;padding:8px 11px;position:relative}
+.multi-select{position:relative}
+.multi-select-toggle{width:100%;border:0;background:transparent;font:inherit;font-weight:700;text-align:left;padding:2px 22px 2px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.multi-select-toggle:after{content:'⌄';position:absolute;right:1px;top:-1px;font-size:18px;color:#34454f}
+.multi-select-menu{display:none;position:absolute;left:-11px;right:-11px;top:calc(100% + 9px);z-index:60;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);max-height:260px;overflow:auto;padding:7px}
+.multi-select.open .multi-select-menu{display:block}
+.multi-select-option{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12px}
+.multi-select-option:hover{background:#f3f1eb}
+.multi-select-option input{margin:0;accent-color:#145c45}
+.multi-select-actions{display:flex;gap:6px;padding:5px 7px 8px;position:sticky;top:0;background:#fff;z-index:2}
+.multi-select-actions button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 7px;font-size:10px;font-weight:800;cursor:pointer}
+
+.filter label{display:block;font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.filter select{width:100%;border:0;background:transparent;font-weight:700;color:var(--ink);outline:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.vac-ops{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.vac-op{padding:14px 16px;min-height:92px;cursor:pointer}
+.vac-op .label{font-size:10px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.04em}
+.vac-op .value{font-size:28px;font-weight:900;margin-top:6px}
+.vac-op .sub{font-size:10px;color:#6B7280;margin-top:2px}
+.kpi{padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;min-height:122px}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent,#123D31)}
+.kpi .label{font-size:12px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.04em}
+.kpi .value{font-size:34px;font-weight:900;margin-top:8px}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:3px}
+.metric-danger{--accent:#E5484D!important}
+.metric-danger .label,.metric-danger .value,.metric-danger .sub{color:#C62828!important}
+.vac-op.metric-danger{border-left-color:#E5484D!important}
+.vac-op.metric-danger .label,.vac-op.metric-danger .value,.vac-op.metric-danger .sub{color:#C62828!important}
+.alert-row.metric-danger{border-left:4px solid #E5484D!important}
+.alert-row.metric-danger span,.alert-row.metric-danger strong{color:#C62828!important}
+.trend-chart{position:relative;height:300px;margin-top:8px;padding:14px 12px 8px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.trend-chart svg{width:100%;height:100%;display:block;overflow:visible}
+.trend-grid{stroke:#E9E3DE;stroke-width:1}
+.trend-axis{fill:#6A7780;font-size:10px;font-weight:700}
+.trend-line-total{fill:none;stroke:#8752E8;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.trend-line-active{fill:none;stroke:#F2B544;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.trend-line-covered-ok{fill:none;stroke:#18A672;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.trend-line-covered-late{fill:none;stroke:#E5484D;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.trend-point-total{fill:#8752E8;stroke:#fff;stroke-width:2}
+.trend-point-active{fill:#F2B544;stroke:#fff;stroke-width:2}
+.trend-point-covered-ok{fill:#18A672;stroke:#fff;stroke-width:2}
+.trend-point-covered-late{fill:#E5484D;stroke:#fff;stroke-width:2}
+.trend-value{font-size:10px;font-weight:900;fill:#22323A}
+.trend-legend{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:11px;font-weight:800}
+.trend-legend span{display:flex;align-items:center;gap:6px}
+.trend-swatch{width:22px;height:3px;border-radius:4px;display:inline-block}
+
+.brand-mark.geb-logo{background:transparent!important;padding:0;width:38px;height:38px;border-radius:0;overflow:visible}
+.brand-mark.geb-logo img{width:38px;height:38px;object-fit:contain;display:block}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);gap:12px;margin-bottom:14px}
+.section{padding:18px}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section h2{font-size:17px;margin:0}.small{font-size:11px;color:var(--muted)}
+.sla-bars{display:grid;gap:6px}
+.sla-bar-card{display:grid;grid-template-columns:150px minmax(220px,360px) 105px;justify-content:space-between;align-items:center;gap:10px;border:1px solid #EEE5E1;border-radius:12px;background:#FBF7F5;padding:11px 12px}
+.sla-unit{font-size:11px;font-weight:900;text-transform:uppercase;line-height:1.12}
+.sla-unit.out,.sla-value.out,.sla-meta.out{color:#C62828}
+.sla-track{position:relative;height:14px;border-radius:999px;background:#EAE5E2;overflow:hidden;width:100%;max-width:360px}
+.sla-fill{position:absolute;left:0;top:0;height:100%;border-radius:999px;min-width:0}
+.sla-overflow{position:absolute;top:0;height:100%;background:inherit;border-radius:0 999px 999px 0;min-width:0}
+.sla-limit{position:absolute;top:-4px;bottom:-4px;width:2px;background:#7A7A7A;border-radius:2px;opacity:.65}
+.sla-limit-label{position:absolute;top:-18px;transform:translateX(-50%);font-size:8px;font-weight:800;color:#667;white-space:nowrap}
+.sla-value{text-align:right;font-size:18px;font-weight:900;line-height:1}
+.sla-value small{font-size:9px;font-weight:900}
+.sla-meta{font-size:9px;color:var(--muted);margin-top:3px;text-align:right;line-height:1.2}
+.sla-empty{font-size:11px;color:var(--muted);text-align:center;padding:12px}
+.alert-list{display:grid;gap:7px}
+.alert-row{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:11px;background:#FAF7F2;border:1px solid var(--line);cursor:pointer;font-size:12px}
+.alert-row strong{font-size:18px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+th{text-align:left;padding:12px;background:#F7F9FA;color:#53616E;font-size:10px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0}
+td{padding:11px 12px;border-top:1px solid #EDF0F2;vertical-align:middle}
+tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-weight:800;font-size:10px;white-space:nowrap}
+.badge.green{background:#DDF6EB;color:#087A51}.badge.yellow{background:#FFF0C7;color:#9B6700}.badge.red{background:#FFE0DF;color:#C72E31}.badge.blue{background:#DDF1FB;color:#126D92}.badge.gray{background:#ECEFF1;color:#53616E}
+.matrix td,.matrix th{text-align:center}.matrix td:first-child,.matrix th:first-child{text-align:left;font-weight:900}
+.matrix-unit:hover,.matrix-area:hover,.matrix-area-total:hover{background:#FBF4E8}
+.matrix-unit{white-space:nowrap}
+
+.bubble{display:inline-grid;place-items:center;min-width:27px;height:27px;border-radius:50%;color:white;font-weight:900;padding:0 7px;cursor:pointer}
+.branch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.bar-chart{height:270px;display:flex;align-items:flex-end;gap:13px;border-left:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;padding:12px 12px 0;margin-top:10px}
+
+.eff-chart-wrap{display:grid;grid-template-columns:34px 1fr;gap:8px;align-items:stretch;margin-top:8px}
+.y-axis{position:relative;height:290px;border-right:1px solid #D9DEE3}
+.y-tick{position:absolute;right:6px;transform:translateY(50%);font-size:9px;color:#687583}
+.y-grid{position:absolute;left:34px;right:0;border-top:1px solid #E8ECEF;pointer-events:none}
+.stacked-chart{height:290px;display:flex;align-items:flex-end;gap:14px;padding:0 10px 26px 0;position:relative}
+.stack-group{flex:1;display:flex;align-items:flex-end;justify-content:center;height:100%;position:relative;min-width:44px}
+.stack-bar{width:44px;display:flex;flex-direction:column-reverse;justify-content:flex-start;border-radius:7px 7px 0 0;overflow:hidden;cursor:pointer}
+.stack-seg{width:100%;min-height:0;cursor:pointer;position:relative}
+.stack-seg:hover{filter:brightness(.94)}
+.stack-label{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:9px;color:#687583;white-space:nowrap}
+.stack-total{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:900;color:#26313A}
+.legend button{border:0;background:transparent;padding:0;cursor:pointer;color:#5F6B76;font-size:10px}
+.legend button.active-filter{font-weight:900;text-decoration:underline}
+
+.bar-group{flex:1;display:flex;align-items:flex-end;gap:3px;height:100%;position:relative}
+.bar{flex:1;min-width:8px;border-radius:6px 6px 0 0;cursor:pointer}
+.bar-label{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:9px;color:#687583;white-space:nowrap}
+.legend{display:flex;gap:13px;flex-wrap:wrap;margin:7px 0}.legend span{font-size:10px;color:#5F6B76}
+.donut{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;margin:15px auto;position:relative}
+.donut:after{content:"";width:110px;height:110px;background:#fff;border-radius:50%;position:absolute}
+.donut strong{z-index:2;font-size:31px}
+.people-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.person{overflow:hidden;cursor:pointer}.person-photo{width:100%;aspect-ratio:4/5;background:#ECEBE8;display:grid;place-items:center;overflow:hidden;position:relative}.person-photo img{width:100%;height:100%;object-fit:cover;object-position:center center;transform:none;image-rendering:auto;padding:0;box-sizing:border-box;background:#ECEBE8}.avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:#D9E6E1;font-size:25px;font-weight:900;color:#234D41}.person-body{padding:13px}.person-name{font-weight:900;font-size:14px;line-height:1.25}.person-meta{font-size:11px;color:#677580;margin-top:4px}
+.hidden{display:none!important}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(11,22,26,.25);z-index:50}.drawer-backdrop.open{display:block}
+.drawer{position:absolute;right:0;top:0;bottom:0;width:min(520px,94vw);background:white;padding:22px;overflow:auto;box-shadow:-16px 0 40px rgba(0,0,0,.15)}
+.drawer h3{margin:0 0 5px;font-size:22px}.close{float:right;border:0;background:#F0F2F3;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
+.drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}.field{background:#F8F6F2;border:1px solid var(--line);border-radius:10px;padding:10px}.field b{display:block;font-size:10px;color:#69747E;text-transform:uppercase;margin-bottom:4px}
+.subtabs{display:flex;gap:7px;margin-bottom:12px}.subtab{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer}.subtab.active{background:#123D31;color:#fff;border-color:#123D31}
+.base-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;justify-content:flex-end}
+.base-filter-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 10px;font-weight:800;cursor:pointer;font-size:12px;min-width:88px}
+.base-filter-btn.active{background:#123D31;color:#fff;border-color:#123D31}
+.base-vac-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.2px;white-space:nowrap}
+.base-vac-status.green{background:#DDF3E8;color:#0C7A4D}
+.base-vac-status.red{background:#F9DEDC;color:#B42318}
+.base-vac-status.yellow{background:#FCEFC7;color:#A15C00}
+.base-vac-status.black{background:#1F2937;color:#FFFFFF}
+.row-actions{display:flex;gap:6px;align-items:center}
+.row-action-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.row-action-btn.edit{background:#E8F0FE;color:#2457C5;border-color:#C8D9FF}
+.row-action-btn.delete{background:#FDE8E7;color:#B42318;border-color:#F5C8C4}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+
+
+
+
+
+
+
+
+
+.catalog-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.catalog-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.catalog-card h3{margin:0 0 10px;font-size:15px}
+.catalog-list{display:grid;gap:8px}
+.catalog-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#FAF9F6}
+.catalog-item span{font-size:12px;font-weight:700}
+.catalog-actions{display:flex;gap:6px}
+.icon-btn{border:0;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:11px;font-weight:800}
+.icon-btn.edit{background:#E8F0FE;color:#2457C5}
+.icon-btn.delete{background:#FDE8E7;color:#C52F32}
+.catalog-add{display:flex;gap:8px;margin-top:10px}
+.catalog-add input{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 10px;outline:none}
+.catalog-add button{border:0;border-radius:9px;background:#123D31;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
+@media(max-width:900px){.catalog-grid{grid-template-columns:1fr}}
+
+
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(13,28,30,.35);z-index:80;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.open{display:flex}
+.modal-card{width:min(980px,96vw);max-height:92vh;overflow:auto;background:#FFFDF8;border:1px solid #E1D6C5;border-radius:18px;box-shadow:0 22px 60px rgba(0,0,0,.20)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 12px;border-bottom:1px solid #E8E0D4}
+.modal-head h3{margin:0;font-size:22px}
+.modal-body{padding:18px 22px 22px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:12px;font-weight:800;color:#5E4B36}
+.form-control{width:100%;border:1px solid #DDCDB8;background:#fff;border-radius:10px;padding:11px 12px;font:inherit;color:#17212B;outline:none}
+.form-control:focus{border-color:#198761;box-shadow:0 0 0 3px rgba(25,135,97,.10)}
+.form-row-inline{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.form-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid #E8E0D4}
+.form-note{font-size:11px;color:#766C61}
+.btn.secondary{background:#EFE7DB;color:#42382E}
+.req{color:#C93D3D}
+@media(max-width:760px){.form-grid,.form-row-inline{grid-template-columns:1fr}.form-group.full{grid-column:auto}}
+
+@media(max-width:1180px){.grid2{grid-template-columns:1fr}.people-grid{grid-template-columns:repeat(3,1fr)}.filters{grid-template-columns:repeat(3,1fr)}.sla-bar-card{grid-template-columns:125px minmax(170px,280px) 92px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand"><div class="brand-mark geb-logo"><img src="data:image/png;base64,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" alt="GEB"></div><span>GEB | Reclutamiento y Selección</span></div>
+    <div class="top-actions"><span id="syncState" style="font-size:11px;color:#DCE9E4">Conectando…</span><button class="btn ghost" id="adminBtn">Admin</button><button class="btn primary" id="newVacBtn">+ Nueva vacante</button></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="resumen">Resumen</button>
+    <button class="tab" data-tab="efectividad">Efectividad</button>
+    <button class="tab" data-tab="vacantes">Vacantes</button>
+    <button class="tab" id="baseTabBtn" data-tab="base">Base de datos</button>
+  </div>
+</header>
+
+<main>
+  <div class="filters">
+    <div class="filter"><label>Periodo</label><select id="periodo"></select></div>
+
+    <div class="filter"><label>Unidad de negocio</label>
+      <div class="multi-select" id="unidadMulti">
+        <button type="button" class="multi-select-toggle" data-multi-toggle="unidad">Todas las unidades</button>
+        <div class="multi-select-menu" id="unidadMenu"></div>
+      </div>
+    </div>
+
+    <div class="filter"><label>Sucursal</label>
+      <div class="multi-select" id="sucursalMulti">
+        <button type="button" class="multi-select-toggle" data-multi-toggle="sucursal">Todas las sucursales</button>
+        <div class="multi-select-menu" id="sucursalMenu"></div>
+      </div>
+    </div>
+
+    <div class="filter"><label>Área</label>
+      <div class="multi-select" id="areaMulti">
+        <button type="button" class="multi-select-toggle" data-multi-toggle="area">Todas las áreas</button>
+        <div class="multi-select-menu" id="areaMenu"></div>
+      </div>
+    </div>
+
+    <div class="filter"><label>Reclutador</label>
+      <div class="multi-select" id="reclutadorMulti">
+        <button type="button" class="multi-select-toggle" data-multi-toggle="reclutador">Todos los reclutadores</button>
+        <div class="multi-select-menu" id="reclutadorMenu"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="tab-resumen">
+    <div class="kpis">
+      <div class="card kpi" style="--accent:#8752E8" data-kpi="total"><div class="label">Total de vacantes</div><div class="value" id="kTotal">0</div><div class="sub">Nuevas + arrastradas del periodo − canceladas</div></div>
+      <div class="card kpi" style="--accent:#F2B544" data-kpi="activas"><div class="label">Vacantes activas</div><div class="value" id="kActivas">0</div><div class="sub" id="kActivasSub">Seguimiento vigente</div></div>
+      <div class="card kpi" style="--accent:#18A672" data-kpi="cubiertas"><div class="label">Vacantes cubiertas</div><div class="value" id="kCubiertas">0</div><div class="sub">Cubiertas en el periodo, aunque se hayan abierto antes</div></div>
+      <div class="card kpi" style="--accent:#1683B5" data-kpi="contrataciones"><div class="label">Contrataciones</div><div class="value" id="kContrataciones">0</div><div class="sub">Incluye ingresos sin requisición formal</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card section">
+        <div class="section-head"><div><h2>Tiempo de cobertura promedio</h2><div class="small">Solo vacantes con fecha de solicitud e ingreso real</div></div><div class="small">SLA: 45 días</div></div>
+        <div class="sla-bars" id="gauges"></div>
+      </div>
+      <div class="card section">
+        <div class="section-head"><div><h2>Alertas</h2><div class="small">Situaciones que requieren atención</div></div></div>
+        <div class="alert-list" id="alerts"></div>
+      </div>
+    </div>
+
+    <div class="card section" style="margin-bottom:14px">
+      <div class="section-head">
+        <div><h2>Tendencia de reclutamiento</h2><div class="small">Vacantes totales, activas al cierre y coberturas dentro/fuera de SLA · enero a septiembre 2026</div></div>
+        <div class="trend-legend">
+          <span><i class="trend-swatch" style="background:#8752E8"></i>Vacantes totales</span>
+          <span><i class="trend-swatch" style="background:#F2B544"></i>Activas al cierre</span>
+          <span><i class="trend-swatch" style="background:#18A672"></i>Cubiertas en SLA</span>
+          <span><i class="trend-swatch" style="background:#E5484D"></i>Cubiertas fuera de SLA</span>
+        </div>
+      </div>
+      <div class="trend-chart" id="recruitmentTrend"></div>
+    </div>
+
+    <div class="card section" style="margin-bottom:14px">
+      <div class="section-head"><div><h2>Distribución de vacantes</h2><div class="small">Por área y unidad de negocio · clic en un número para ver detalle</div></div></div>
+      <div class="table-wrap"><table class="matrix" id="matrix"></table></div>
+    </div>
+</section>
+
+  <section id="tab-vacantes" class="hidden">
+    <div class="vac-ops">
+      <div class="card vac-op" data-vac-op="activas" style="border-left:4px solid #F2B544"><div class="label">Activas</div><div class="value" id="voActivas">0</div><div class="sub">Vacantes activas del periodo</div></div>
+      <div class="card vac-op" data-vac-op="riesgo" style="border-left:4px solid #F2B544"><div class="label">Por vencer</div><div class="value" id="voRiesgo">0</div><div class="sub">30 a 44 días</div></div>
+      <div class="card vac-op" data-vac-op="fuera" style="border-left:4px solid #E5484D"><div class="label">Fuera de SLA</div><div class="value" id="voFuera">0</div><div class="sub">45 días o más</div></div>
+      <div class="card vac-op" data-vac-op="cubiertas" style="border-left:4px solid #18A672"><div class="label">Cubiertas</div><div class="value" id="voCubiertas">0</div><div class="sub">Cubiertas en el periodo</div></div>
+    </div>
+
+    <div class="card section">
+      <div class="section-head">
+        <div><h2>Seguimiento de vacantes</h2><div class="small">Vista operativa para priorizar qué vacantes requieren atención</div></div>
+        <div class="small" id="vacCount"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="filter" style="min-width:190px"><label>Estatus de vacante</label><select id="vacStatusFilter"><option value="">Activas y cubiertas</option><option value="ACTIVA">Solo activas</option><option value="CUBIERTA">Solo cubiertas</option></select></div>
+        <div class="filter" style="min-width:190px"><label>Días de reclutamiento</label><select id="vacDaysFilter"><option value="">Todos</option><option value="RISK">30 a 44 días</option><option value="OVER45">45 días o más</option><option value="UNDER30">Menos de 30 días</option></select></div>
+      </div>
+      <div class="table-wrap" style="max-height:650px"><table id="vacTable"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-efectividad" class="hidden">
+    <div class="kpis">
+      <div class="card kpi" style="--accent:#18A672"><div class="label">Efectividad +90</div><div class="value" id="eEfect">0%</div><div class="sub">Meta 80% · solo personas evaluables</div></div>
+      <div class="card kpi" style="--accent:#1683B5"><div class="label">Ingresos</div><div class="value" id="eIngresos">0</div><div class="sub">Contrataciones del periodo</div></div>
+      <div class="card kpi" style="--accent:#E5484D"><div class="label">Bajas totales</div><div class="value" id="eBajas">0</div><div class="sub">Bajas -90 y +90 días</div></div>
+      <div class="card kpi" style="--accent:#E5484D"><div class="label">Bajas -90 días</div><div class="value" id="eBajas90">0</div><div class="sub">Afectan el indicador</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card section">
+        <div class="section-head"><div><h2>Efectividad del reclutamiento</h2><div class="small">Evolución mensual de las contrataciones</div></div></div>
+        <div class="legend" id="effLegend">
+          <button data-eff-status="ACTIVO +90"><i class="dot" style="background:#18A672"></i>Activo +90</button>
+          <button data-eff-status="BAJA -90"><i class="dot" style="background:#E5484D"></i>Baja -90</button>
+          <button data-eff-status="ACTIVO -90"><i class="dot" style="background:#F2B544"></i>Activo -90</button>
+          <button data-eff-status="BAJA +90"><i class="dot" style="background:#1683B5"></i>Baja +90</button>
+        </div>
+        <div class="eff-chart-wrap">
+          <div class="y-axis" id="effYAxis"></div>
+          <div style="position:relative">
+            <div id="effGrid"></div>
+            <div class="stacked-chart" id="bars"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card section">
+        <div class="section-head"><div><h2>Resultado del periodo</h2><div class="small">Meta de permanencia: 80%</div></div></div>
+        <div class="donut" id="donut"><strong id="donutVal">0%</strong></div>
+        <div id="effBreakdown" style="font-size:12px;line-height:1.9"></div>
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="section-head"><div><h2>Personas contratadas</h2><div class="small">Clic en una tarjeta para abrir la ficha</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select id="personStatus"><option value="">Todos los estatus</option><option>ACTIVO +90</option><option>ACTIVO -90</option><option>BAJA +90</option><option>BAJA -90</option></select><button class="btn primary" id="newHireBtn">+ Agregar contratación</button></div></div>
+      <div class="people-grid" id="people"></div>
+    </div>
+  </section>
+
+  <section id="tab-base" class="hidden">
+    <div class="card section">
+      <div class="section-head"><div><h2>Base de datos</h2><div class="small">Fuente inicial: hoja ACUMULADO 2026</div></div></div>
+      <div class="subtabs">
+        <button class="subtab active" data-base="vac">Vacantes</button>
+        <button class="subtab" data-base="cont">Contrataciones</button>
+        <button class="subtab" data-base="bajas">Bajas</button>
+        <button class="subtab" data-base="cat">Catálogos</button>
+      </div>
+      <div id="baseContent"></div>
+    </div>
+  </section>
+</main>
+
+
+
+<div class="modal-backdrop" id="adminModal">
+  <div class="modal-card" style="width:min(460px,94vw)">
+    <div class="modal-head">
+      <div>
+        <div class="small">ACCESO ADMINISTRADOR</div>
+        <h3>Iniciar sesión</h3>
+        <div class="small">Solo el administrador puede crear, editar o eliminar vacantes.</div>
+      </div>
+      <button class="close" id="closeAdminModal">×</button>
+    </div>
+    <form id="adminLoginForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Correo</label>
+          <input class="form-control" id="adminEmail" type="email" autocomplete="username" required>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Contraseña</label>
+          <input class="form-control" id="adminPassword" type="password" autocomplete="current-password" required>
+        </div>
+        <div id="adminLoginMsg" class="small" style="margin-top:10px"></div>
+        <div class="form-actions">
+          <button type="button" class="btn secondary" id="logoutBtn">Cerrar sesión</button>
+          <button type="submit" class="btn primary">Entrar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="hireModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="small">CONTRATACIÓN SIN REQUISICIÓN</div>
+        <h3>Agregar contratación</h3>
+        <div class="small">Este ingreso contará en Contrataciones y Efectividad, pero no en indicadores de Vacantes ni tiempo de cobertura.</div>
+      </div>
+      <button class="close" id="closeHireModal">×</button>
+    </div>
+    <form id="newHireForm">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full"><label>Nombre completo <span class="req">*</span></label><input class="form-control" id="nhNombre" type="text" required></div>
+          <div class="form-group"><label>Rol / puesto <span class="req">*</span></label><select class="form-control" id="nhRol" required></select></div>
+          <div class="form-group"><label>Unidad de negocio <span class="req">*</span></label><select class="form-control" id="nhUnidad" required></select></div>
+          <div class="form-group"><label>Sucursal <span class="req">*</span></label><select class="form-control" id="nhSucursal" required></select></div>
+          <div class="form-group"><label>Área</label><select class="form-control" id="nhArea"></select></div>
+          <div class="form-group"><label>Reclutador</label><select class="form-control" id="nhReclutador"></select></div>
+          <div class="form-group"><label>Fecha de ingreso <span class="req">*</span></label><input class="form-control" id="nhFechaIngreso" type="date" required></div>
+          <div class="form-group"><label>Fecha de baja</label><input class="form-control" id="nhFechaBaja" type="date"></div>
+          <div class="form-group full"><label>URL fotografía</label><input class="form-control" id="nhFoto" type="url" placeholder="https://..."></div>
+          <div class="form-group full"><label>Comentarios</label><textarea class="form-control" id="nhComentarios" rows="2" placeholder="Comentario opcional"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <div class="form-note">Origen: <b>SIN REQUISICIÓN</b></div>
+          <div style="display:flex;gap:8px"><button type="button" class="btn secondary" id="cancelHireModal">Cancelar</button><button type="submit" class="btn primary">Guardar contratación</button></div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="vacancyModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="small">CAPTURA DE VACANTE</div>
+        <h3 id="vacancyModalTitle">Nueva vacante</h3>
+        <div class="small">Los campos de catálogo se muestran como listas desplegables.</div>
+      </div>
+      <button class="close" id="closeVacancyModal">×</button>
+    </div>
+
+    <form id="newVacancyForm">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Vacante <span class="req">*</span></label>
+            <select class="form-control" id="nvVacante" required></select>
+          </div>
+
+          <div class="form-group">
+            <label>Unidad de negocio <span class="req">*</span></label>
+            <select class="form-control" id="nvUnidad" required></select>
+          </div>
+
+          <div class="form-group">
+            <label>Sucursal <span class="req">*</span></label>
+            <select class="form-control" id="nvSucursal" required></select>
+          </div>
+
+          <div class="form-group">
+            <label>Área <span class="req">*</span></label>
+            <select class="form-control" id="nvArea" required></select>
+          </div>
+
+          <div class="form-group">
+            <label>Reclutador <span class="req">*</span></label>
+            <select class="form-control" id="nvReclutador" required></select>
+          </div>
+
+          <div class="form-group">
+            <label>N° de plazas <span class="req">*</span></label>
+            <input class="form-control" id="nvPlazas" type="number" min="1" value="1" required>
+          </div>
+
+          <div class="form-group">
+            <label>Motivo de vacante <span class="req">*</span></label>
+            <select class="form-control" id="nvMotivo" required>
+              <option value="">Selecciona una opción</option>
+              <option value="Reemplazo">Reemplazo</option>
+              <option value="Nueva creación">Nueva creación</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha de solicitud <span class="req">*</span></label>
+            <input class="form-control" id="nvSolicitud" type="date" required>
+          </div>
+
+          <div class="form-group">
+            <label>Estatus <span class="req">*</span></label>
+            <select class="form-control" id="nvEstatus" required>
+              <option value="ACTIVA">ACTIVA</option>
+              <option value="CUBIERTA">CUBIERTA</option>
+              <option value="CANCELADA">CANCELADA</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="nvIngresoFechaGroup" style="display:none">
+            <label>Fecha de ingreso <span class="req">*</span></label>
+            <input class="form-control" id="nvIngresoFecha" type="date">
+          </div>
+
+          <div class="form-group" id="nvIngresoNombreGroup" style="display:none">
+            <label>Nombre de la persona contratada</label>
+            <input class="form-control" id="nvIngresoNombre" type="text" placeholder="Nombre completo">
+          </div>
+
+          <div class="form-group" id="nvCancelacionFechaGroup" style="display:none">
+            <label>Fecha de cancelación <span class="req">*</span></label>
+            <input class="form-control" id="nvCancelacionFecha" type="date">
+          </div>
+
+          <div class="form-group full">
+            <label>Horario</label>
+            <textarea class="form-control" id="nvHorario" rows="3" placeholder="Ej. Lunes a viernes de 06:00 a 14:00..."></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label>Comentarios</label>
+            <textarea class="form-control" id="nvComentarios" rows="2" placeholder="Comentario opcional sobre la vacante"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Sueldo 100%</label>
+            <input class="form-control" id="nvSueldo" type="number" min="0" step="0.01" placeholder="0.00">
+          </div>
+
+          <div class="form-group">
+            <label>Carga horaria</label>
+            <input class="form-control" id="nvCarga" type="number" min="0" step="1" placeholder="48">
+          </div>
+
+          <div class="form-group">
+            <label>Vales de despensa</label>
+            <input class="form-control" id="nvVales" type="number" min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <div class="form-note">Los campos marcados con <span class="req">*</span> son obligatorios.</div>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="btn secondary" id="cancelVacancyModal">Cancelar</button>
+            <button type="submit" class="btn primary" id="saveVacancyBtn">Guardar vacante</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawerWrap"><div class="drawer"><button class="close" id="closeDrawer">×</button><div id="drawerContent"></div></div></div>
+
+<script>
+const SUPABASE_URL = 'https://yokkzougxmpxpvluqgvh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yihHbDZfO6550plzzvaWVQ_bCWfV4-q';
+let data = [];
+let hiresData = [];
+let accessToken = sessionStorage.getItem('gebSupabaseAccessToken') || '';
+let effChartFilter='';
+let baseVacStatusFilter='';
+let editingVacancyId='';
+
+const TODAY = new Date('2026-09-15T12:00:00');
+const COLORS = {
+  'EASY FIT':'#FF6B00',
+  'VIVO47':'#198754',
+  'VIVO47 CENTER':'#9ACD32',
+  'ONARA':'#161616',
+  'CLÍNICA':'#FF5149',
+  'ESTRUCTURA Y SOPORTE':'#8752E8',
+  'ACTON':'#13B5E6'
+};
+const UNIT_TEXT_COLORS = {
+  'VIVO47 CENTER':'#17372F'
+};
+const UNIT_ORDER = ['VIVO47','VIVO47 CENTER','EASY FIT','CLÍNICA','ONARA','ESTRUCTURA Y SOPORTE','ACTON'];
+const MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const MONTH_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+function supabaseHeaders(useAuth=false){
+  const h={
+    'apikey':SUPABASE_KEY,
+    'Content-Type':'application/json'
+  };
+  if(useAuth && accessToken){
+    h['Authorization']='Bearer '+accessToken;
+  }
+  return h;
+}
+
+
+function normalizeRecruiterName(value){
+  const raw=(value||'').toString().trim().replace(/\s+/g,' ');
+  if(!raw) return '';
+
+  const key=raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase();
+
+  const aliases={
+    'EMMA':'EMMANUEL',
+    'EMMANUEL':'EMMANUEL',
+    'ALEJANDRO':'ALEJANDRO',
+    'CRISTINA':'CRISTINA',
+    'CRISTI':'CRISTINA',
+    'JESSICA':'JESSICA',
+    'JESS':'JESSICA',
+    'NICOLE':'NICOLE',
+    'TATIANA':'TATIANA',
+    'PATTY':'PATTY',
+    'KARLA':'KARLA'
+  };
+
+  return aliases[key] || raw.toUpperCase();
+}
+
+function mapDbRow(r){
+  return {
+    id:String(r.id),
+    codigo:r.codigo_vacante||'',
+    vacante:r.vacante||'',
+    unidad:r.unidad_negocio||'',
+    sucursal:r.sucursal||'',
+    area:r.area||'',
+    reclutador:normalizeRecruiterName(r.reclutador),
+    plazas:Number(r.numero_plazas||1),
+    motivo:r.motivo_vacante||'',
+    horario:r.horario||'',
+    comentarios:r.comentarios||'',
+    sueldo:Number(r.sueldo_100||0),
+    carga:Number(r.carga_horaria||0),
+    vales:Number(r.vales_despensa||0),
+    solicitud:r.fecha_solicitud||'',
+    estatus:(r.estatus||'').toUpperCase(),
+    ingresoFecha:r.fecha_ingreso_real||'',
+    cancelacionFecha:r.fecha_cancelacion||'',
+    ingreso:r.nombre_ingreso||'',
+    bajaFecha:r.fecha_baja||'',
+    foto:r.foto_url||''
+  };
+}
+
+
+function mapHireRow(r){
+  return {
+    id:String(r.id),
+    vacanteId:r.vacante_id==null?'':String(r.vacante_id),
+    ingreso:r.nombre||'',
+    vacante:r.rol||'',
+    unidad:r.unidad_negocio||'',
+    sucursal:r.sucursal||'',
+    area:r.area||'',
+    reclutador:normalizeRecruiterName(r.reclutador),
+    ingresoFecha:r.fecha_ingreso||'',
+    bajaFecha:r.fecha_baja||'',
+    foto:r.foto_url||'',
+    origen:r.origen||'',
+    comentarios:r.comentarios||''
+  };
+}
+
+function hireToDb(r){
+  return {
+    vacante_id:r.vacanteId?Number(r.vacanteId):null,
+    nombre:r.ingreso,
+    rol:r.vacante,
+    unidad_negocio:r.unidad,
+    sucursal:r.sucursal,
+    area:r.area||null,
+    reclutador:normalizeRecruiterName(r.reclutador)||null,
+    fecha_ingreso:r.ingresoFecha,
+    fecha_baja:r.bajaFecha||null,
+    foto_url:r.foto||null,
+    origen:r.origen||'CON VACANTE',
+    comentarios:r.comentarios||null
+  };
+}
+
+function vacancyToDb(r){
+  return {
+    codigo_vacante:r.codigo||null,
+    vacante:r.vacante,
+    unidad_negocio:r.unidad,
+    sucursal:r.sucursal,
+    area:r.area,
+    reclutador:normalizeRecruiterName(r.reclutador),
+    numero_plazas:r.plazas,
+    motivo_vacante:r.motivo,
+    horario:r.horario||null,
+    comentarios:r.comentarios||null,
+    sueldo_100:r.sueldo||null,
+    carga_horaria:r.carga||null,
+    vales_despensa:r.vales||null,
+    fecha_solicitud:r.solicitud,
+    estatus:r.estatus,
+    fecha_ingreso_real:r.ingresoFecha||null,
+    fecha_cancelacion:r.cancelacionFecha||null,
+    nombre_ingreso:r.ingreso||null,
+    fecha_baja:r.bajaFecha||null,
+    foto_url:r.foto||null
+  };
+}
+
+async function loadVacancies(){
+  const sync=document.getElementById('syncState');
+  try{
+    sync.textContent='Sincronizando…';
+
+    const [vacRes, hireRes]=await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026?select=*&order=id.asc`,{headers:supabaseHeaders(false)}),
+      fetch(`${SUPABASE_URL}/rest/v1/contrataciones_2026?select=*&order=fecha_ingreso.asc,id.asc`,{headers:supabaseHeaders(false)})
+    ]);
+
+    const vacRaw=await vacRes.text();
+    const hireRaw=await hireRes.text();
+
+    if(!vacRes.ok) throw new Error(`Vacantes HTTP ${vacRes.status}: ${vacRaw}`);
+    if(!hireRes.ok) throw new Error(`Contrataciones HTTP ${hireRes.status}: ${hireRaw}`);
+
+    data=(vacRaw?JSON.parse(vacRaw):[]).map(mapDbRow);
+    hiresData=(hireRaw?JSON.parse(hireRaw):[]).map(mapHireRow);
+
+    sync.textContent=`Sincronizado · ${data.length} vacantes · ${hiresData.length} contrataciones`;
+    setupFilters();
+    renderAll();
+    updateAdminUi();
+  }catch(err){
+    console.error(err);
+    sync.textContent='Error de conexión';
+    alert('No se pudieron cargar los datos desde Supabase.\n\nDetalle: '+err.message);
+  }
+}
+
+async function loginAdmin(email,password){
+  const res=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+    method:'POST',
+    headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,password})
+  });
+  if(!res.ok) throw new Error('Credenciales incorrectas o usuario no habilitado.');
+  const payload=await res.json();
+  accessToken=payload.access_token||'';
+  if(accessToken) sessionStorage.setItem('gebSupabaseAccessToken',accessToken);
+  updateAdminUi();
+}
+
+function logoutAdmin(){
+  accessToken='';
+  sessionStorage.removeItem('gebSupabaseAccessToken');
+  updateAdminUi();
+}
+
+function updateAdminUi(){
+  const logged=!!accessToken;
+  const adminBtn=document.getElementById('adminBtn');
+  if(adminBtn) adminBtn.textContent=logged?'Admin activo':'Admin';
+
+  const newBtn=document.getElementById('newVacBtn');
+  if(newBtn) newBtn.style.display=logged?'inline-block':'none';
+
+  const hireBtn=document.getElementById('newHireBtn');
+  if(hireBtn) hireBtn.style.display=logged?'inline-block':'none';
+
+  const baseTab=document.getElementById('baseTabBtn');
+  if(baseTab) baseTab.style.display=logged?'inline-block':'none';
+
+  // Si se cierra sesión estando en Base de datos, regresar a Resumen.
+  if(!logged && document.querySelector('.tab.active')?.dataset.tab==='base'){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelector('.tab[data-tab="resumen"]')?.classList.add('active');
+    ['resumen','vacantes','efectividad','base'].forEach(x=>{
+      document.getElementById('tab-'+x)?.classList.toggle('hidden',x!=='resumen');
+    });
+  }
+
+  document.querySelectorAll('[data-edit-vacancy],[data-delete-vacancy]')
+    .forEach(el=>el.style.display=logged?'inline-block':'none');
+}
+
+async function dbInsertVacancy(record){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026`,{
+    method:'POST',
+    headers:{...supabaseHeaders(true),'Prefer':'return=representation'},
+    body:JSON.stringify(vacancyToDb(record))
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return (await res.json())[0];
+}
+
+async function dbUpdateVacancy(id,patch){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026?id=eq.${encodeURIComponent(id)}`,{
+    method:'PATCH',
+    headers:{...supabaseHeaders(true),'Prefer':'return=representation'},
+    body:JSON.stringify(patch)
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return (await res.json())[0];
+}
+
+
+async function dbInsertHire(record){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/contrataciones_2026`,{
+    method:'POST',
+    headers:{...supabaseHeaders(true),'Prefer':'return=representation'},
+    body:JSON.stringify(hireToDb(record))
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return (await res.json())[0];
+}
+
+
+async function dbDeleteVacancy(id){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026?id=eq.${encodeURIComponent(id)}`,{
+    method:'DELETE',
+    headers:supabaseHeaders(true)
+  });
+  if(!res.ok) throw new Error(await res.text());
+}
+
+function d(s){ if(!s) return null; const x=new Date(s+'T12:00:00'); return isNaN(x)?null:x; }
+function days(a,b){ const x=d(a), y=d(b); if(!x||!y) return null; return Math.max(0,Math.round((y-x)/86400000)); }
+function fmtDate(s){ const x=d(s); return x?x.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';}
+function money(n){ return Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0});}
+function initials(name){return (name||'?').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()}
+function driveImg(url){
+  if(!url) return '';
+  const m=url.match(/\/d\/([^/]+)/); return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w600`:'';
+}
+
+function personPhotoStyle(){return 'object-fit:cover;object-position:center center;transform:none;padding:0;background:#ECEBE8';}
+function tenureStatus(r){
+  if(!r.ingresoFecha) return '';
+  const end=r.bajaFecha||'2026-09-11';
+  const n=days(r.ingresoFecha,end);
+  if(r.bajaFecha) return n>=90?'BAJA +90':'BAJA -90';
+  return n>=90?'ACTIVO +90':'ACTIVO -90';
+}
+function isFormalVacancy(r){
+  return !!(r.solicitud && String(r.solicitud).trim());
+}
+function currentCoverageDays(r){
+  if(!r.solicitud) return null;
+  if(r.estatus==='CUBIERTA' && r.ingresoFecha) return days(r.solicitud,r.ingresoFecha);
+  if(r.estatus==='ACTIVA') return days(r.solicitud,'2026-09-11');
+  return null;
+}
+function coverageDays(r){
+  if(!r.solicitud) return null;
+  const bounds=selectedMonthBounds();
+  if(!bounds) return currentCoverageDays(r);
+
+  const ingreso=d(r.ingresoFecha);
+  if(ingreso && ingreso<=bounds.end){
+    return days(r.solicitud, r.ingresoFecha);
+  }
+  return days(r.solicitud, bounds.end.toISOString().slice(0,10));
+}
+function statusForSelectedPeriod(r){
+  const bounds=selectedMonthBounds();
+  if(!bounds) return r.estatus;
+  if(r.estatus==='CANCELADA') return 'CANCELADA';
+  const ingreso=d(r.ingresoFecha);
+  if(ingreso && ingreso<=bounds.end) return 'CUBIERTA';
+  return 'ACTIVA';
+}
+function slaClass(n){ if(n==null)return 'gray'; return n<30?'green':n<45?'yellow':'red'; }
+function slaText(n){ if(n==null)return 'SIN FECHA'; return n<30?'EN TIEMPO':n<45?'EN RIESGO':'FUERA DE SLA'; }
+function timingState(n){
+  if(n==null) return 'SIN FECHA';
+  return n<45 ? 'EN TIEMPO' : 'YA ESTÁ TARDE';
+}
+function expiryAlert(n){
+  if(n==null) return 'SIN FECHA';
+  if(n<45) return `-${45-n} DÍAS`;
+  if(n===45) return '0 DÍAS';
+  return `${n-45} DÍAS`;
+}
+function baseVacStatusMeta(r){
+  const st=statusForSelectedPeriod(r);
+  const n=coverageDays(r);
+  if(st==='CANCELADA') return {cls:'black',label:'CANCELADA'};
+  if(st==='ACTIVA') return {cls:'yellow',label:'ACTIVA'};
+  if(st==='CUBIERTA'){
+    if(n!=null && n<45) return {cls:'green',label:'CUBIERTA'};
+    return {cls:'red',label:'CUBIERTA'};
+  }
+  return {cls:'black',label:st||'SIN ESTATUS'};
+}
+function baseVacStatusBadge(r){
+  const meta=baseVacStatusMeta(r);
+  return `<span class="base-vac-status ${meta.cls}">${meta.label}</span>`;
+}
+
+
+function monthIndex(s){ const x=d(s); return x?x.getMonth():null; }
+function periodPredicate(r, dateField='solicitud'){
+  const val=document.getElementById('periodo').value;
+  if(val==='all') return true;
+  const x=d(r[dateField]); if(!x) return false;
+  return x.getMonth()===Number(val);
+}
+
+function selectedMonthBounds(){
+  const val=document.getElementById('periodo').value;
+  if(val==='all') return null;
+  const m=Number(val);
+  return {
+    start:new Date(2026,m,1,12,0,0),
+    end:new Date(2026,m+1,0,12,0,0)
+  };
+}
+
+
+
+
+
+
+
+function filteredIgnoringPeriod(){
+  return data.filter(r=>
+    multiMatches('unidad',r.unidad) &&
+    multiMatches('sucursal',r.sucursal) &&
+    multiMatches('area',r.area) &&
+    multiMatches('reclutador',r.reclutador)
+  );
+}
+
+
+function activeVacanciesForSelectedPeriod(){
+  const bounds=selectedMonthBounds();
+
+  return data.filter(r=>{
+    if(!isFormalVacancy(r)) return false;
+    if(r.estatus==='CANCELADA') return false;
+    if(!multiMatches('unidad',r.unidad)) return false;
+    if(!multiMatches('sucursal',r.sucursal)) return false;
+    if(!multiMatches('area',r.area)) return false;
+    if(!multiMatches('reclutador',r.reclutador)) return false;
+
+    if(!bounds) return r.estatus==='ACTIVA';
+
+    const solicitud=d(r.solicitud);
+    if(!solicitud || solicitud>bounds.end) return false;
+
+    const ingreso=d(r.ingresoFecha);
+
+    // Regla histórica v29:
+    // - Si la vacante está ACTIVA y no tiene ingreso, estaba activa al cierre del mes.
+    // - Si está CUBIERTA y no tiene fecha de ingreso, NO se asume automáticamente activa.
+    // - Si tiene fecha de ingreso posterior al fin del mes, sí estaba activa al cierre.
+    if(ingreso) return ingreso>bounds.end;
+    return r.estatus==='ACTIVA';
+  });
+}
+
+function coveredVacanciesForSelectedPeriod(){
+  const bounds=selectedMonthBounds();
+
+  return data.filter(r=>{
+    if(!isFormalVacancy(r)) return false;
+    if(r.estatus==='CANCELADA') return false;
+    if(!r.ingresoFecha) return false;
+    if(!multiMatches('unidad',r.unidad)) return false;
+    if(!multiMatches('sucursal',r.sucursal)) return false;
+    if(!multiMatches('area',r.area)) return false;
+    if(!multiMatches('reclutador',r.reclutador)) return false;
+
+    const ingreso=d(r.ingresoFecha);
+    const solicitud=d(r.solicitud);
+    if(!ingreso) return false;
+
+    // No usar fechas cronológicamente imposibles en indicadores.
+    if(solicitud && ingreso<solicitud) return false;
+
+    if(!bounds) return ingreso.getFullYear()===2026;
+    return ingreso>=bounds.start && ingreso<=bounds.end;
+  });
+}
+
+function totalVacanciesForSelectedPeriod(){
+  const bounds=selectedMonthBounds();
+
+  return data.filter(r=>{
+    if(!isFormalVacancy(r)) return false;
+    if(r.estatus==='CANCELADA') return false;
+    if(!multiMatches('unidad',r.unidad)) return false;
+    if(!multiMatches('sucursal',r.sucursal)) return false;
+    if(!multiMatches('area',r.area)) return false;
+    if(!multiMatches('reclutador',r.reclutador)) return false;
+
+    if(!bounds) return true;
+
+    const solicitud=d(r.solicitud);
+    if(!solicitud || solicitud>bounds.end) return false;
+
+    const ingreso=d(r.ingresoFecha);
+    const validIngreso = ingreso && (!solicitud || ingreso>=solicitud);
+
+    const openedInPeriod = solicitud>=bounds.start && solicitud<=bounds.end;
+    const coveredInPeriod = validIngreso && ingreso>=bounds.start && ingreso<=bounds.end;
+    const activeAtPeriodEnd = validIngreso ? ingreso>bounds.end : r.estatus==='ACTIVA';
+
+    return openedInPeriod || coveredInPeriod || activeAtPeriodEnd;
+  });
+}
+
+
+function globalFiltered(dateField='solicitud'){
+  return data.filter(r=>
+    periodPredicate(r,dateField) &&
+    multiMatches('unidad',r.unidad) &&
+    multiMatches('sucursal',r.sucursal) &&
+    multiMatches('area',r.area) &&
+    multiMatches('reclutador',r.reclutador)
+  );
+}
+
+function globalHireFiltered(){
+  const val=document.getElementById('periodo').value;
+
+  return hiresData.filter(r=>{
+    const x=d(r.ingresoFecha);
+    const periodOk = val==='all' ? true : (x && x.getMonth()===Number(val));
+    return periodOk &&
+      multiMatches('unidad',r.unidad) &&
+      multiMatches('sucursal',r.sucursal) &&
+      multiMatches('area',r.area) &&
+      multiMatches('reclutador',r.reclutador);
+  });
+}
+
+function distinct(k){
+  const vals=[...data.map(x=>x[k]),...hiresData.map(x=>x[k])].filter(Boolean);
+  const cleanVals=k==='reclutador'?vals.map(normalizeRecruiterName):vals;
+  return [...new Set(cleanVals)].sort((a,b)=>a.localeCompare(b,'es'));
+}
+function fillSelect(id, values, label){
+  const el=document.getElementById(id); el.innerHTML=`<option value="">${label}</option>`+values.map(v=>`<option>${v}</option>`).join('');
+}
+
+const MULTI_LABELS = {
+  unidad:'Todas las unidades',
+  sucursal:'Todas las sucursales',
+  area:'Todas las áreas',
+  reclutador:'Todos los reclutadores'
+};
+const selectedFilters = {
+  unidad:new Set(),
+  sucursal:new Set(),
+  area:new Set(),
+  reclutador:new Set()
+};
+
+function multiValues(key){
+  return [...selectedFilters[key]];
+}
+
+function multiMatches(key,value){
+  const vals=selectedFilters[key];
+  return vals.size===0 || vals.has(value);
+}
+
+function renderMultiSelect(key, values){
+  const menu=document.getElementById(`${key}Menu`);
+  if(!menu) return;
+
+  const selected=selectedFilters[key];
+  const valid=new Set(values);
+  [...selected].forEach(v=>{ if(!valid.has(v)) selected.delete(v); });
+
+  menu.innerHTML=`
+    <div class="multi-select-actions">
+      <button type="button" data-multi-all="${key}">Seleccionar todo</button>
+      <button type="button" data-multi-clear="${key}">Limpiar</button>
+    </div>
+    ${values.map(v=>`
+      <label class="multi-select-option">
+        <input type="checkbox" data-multi-key="${key}" value="${String(v).replace(/"/g,'&quot;')}" ${selected.has(v)?'checked':''}>
+        <span>${v}</span>
+      </label>`).join('')}
+  `;
+  updateMultiLabel(key);
+}
+
+function updateMultiLabel(key){
+  const btn=document.querySelector(`[data-multi-toggle="${key}"]`);
+  if(!btn) return;
+  const vals=multiValues(key);
+  if(vals.length===0){
+    btn.textContent=MULTI_LABELS[key];
+  }else if(vals.length===1){
+    btn.textContent=vals[0];
+  }else if(vals.length===2){
+    btn.textContent=vals.join(' + ');
+  }else{
+    btn.textContent=`${vals.length} seleccionados`;
+  }
+  btn.title=vals.length?vals.join(', '):MULTI_LABELS[key];
+}
+
+
+function setupFilters(){
+  document.getElementById('periodo').innerHTML='<option value="all">Acumulado 2026</option>'+MONTHS.slice(0,9).map((m,i)=>`<option value="${i}">${m[0]+m.slice(1).toLowerCase()} 2026</option>`).join('');
+
+  const cats=getCatalogs();
+  renderMultiSelect('unidad',cats.unidades||distinct('unidad'));
+  renderMultiSelect('sucursal',cats.sucursales||distinct('sucursal'));
+  renderMultiSelect('area',cats.areas||distinct('area'));
+  renderMultiSelect('reclutador',cats.reclutadores||distinct('reclutador'));
+
+  document.getElementById('periodo').onchange=renderAll;
+}
+function dataQualityIssues(){
+  return filteredIgnoringPeriod().filter(r=>{
+    if(!r.solicitud || !r.ingresoFecha) return false;
+    const s=d(r.solicitud), i=d(r.ingresoFecha);
+    return s && i && i<s;
+  });
+}
+
+function setMetricDangerById(valueId,isDanger){
+  const el=document.getElementById(valueId);
+  const card=el?.closest('.kpi,.vac-op');
+  if(card) card.classList.toggle('metric-danger',!!isDanger);
+}
+
+function renderKPIs(){
+  const hires=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+  const totalPeriod=totalVacanciesForSelectedPeriod();
+  const activePeriod=activeVacanciesForSelectedPeriod();
+  const coveredPeriod=coveredVacanciesForSelectedPeriod();
+
+  document.getElementById('kTotal').textContent=totalPeriod.length;
+  document.getElementById('kActivas').textContent=activePeriod.length;
+  document.getElementById('kCubiertas').textContent=coveredPeriod.length;
+  document.getElementById('kContrataciones').textContent=hires.length;
+
+  const late=activePeriod.filter(r=>(coverageDays(r)??-1)>45).length;
+  const issues=dataQualityIssues().length;
+  document.getElementById('kActivasSub').textContent=
+    (late?`${late} fuera de SLA en el periodo`:'Sin vacantes activas fuera de SLA') +
+    (issues?` · ${issues} dato${issues===1?'':'s'} por revisar`:'');
+
+}
+function renderGauges(){
+  const units=UNIT_ORDER.filter(u=>data.some(r=>r.unidad===u)||hiresData.some(r=>r.unidad===u));
+
+  const rows=units.map(u=>{
+    const vals=coveredVacanciesForSelectedPeriod()
+      .filter(r=>r.unidad===u)
+      .map(r=>coverageDays(r))
+      .filter(v=>v!=null);
+
+    const avg=vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+    return {unidad:u, vals, avg};
+  });
+
+  const maxAvg=Math.max(45,...rows.map(r=>r.avg||0));
+  const scaleMax=Math.ceil(maxAvg/5)*5;
+  const limitPct=(45/scaleMax)*100;
+
+  document.getElementById('gauges').innerHTML=rows.map(row=>{
+    const u=row.unidad, vals=row.vals, avg=row.avg;
+    const color=COLORS[u]||'#667085';
+
+    if(avg==null){
+      return `<div class="sla-bar-card">
+        <div class="sla-unit">${u}</div>
+        <div class="sla-track">
+          <div class="sla-limit" style="left:${limitPct}%"></div>
+          <div class="sla-limit-label" style="left:${limitPct}%">45 DÍAS</div>
+        </div>
+        <div><div class="sla-value">—</div><div class="sla-meta">${vals.length} vacante${vals.length===1?'':'s'}</div></div>
+      </div>`;
+    }
+
+    const out=avg>45;
+    const avgPct=Math.max(0,Math.min(100,(avg/scaleMax)*100));
+
+    return `<div class="sla-bar-card">
+      <div class="sla-unit ${out?'out':''}">${u}</div>
+      <div class="sla-track">
+        <div class="sla-fill" style="width:${avgPct}%;background:${color}"></div>
+        <div class="sla-limit" style="left:${limitPct}%"></div>
+        <div class="sla-limit-label" style="left:${limitPct}%">45 DÍAS</div>
+      </div>
+      <div>
+        <div class="sla-value ${out?'out':''}">${avg}<small> DÍAS</small></div>
+        <div class="sla-meta ${out?'out':''}">${vals.length} vacante${vals.length===1?'':'s'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderRecruitmentTrend(){
+  const box=document.getElementById('recruitmentTrend');
+  if(!box) return;
+
+  // Ene-Sep 2026. Respeta Unidad, Sucursal, Área y Reclutador; ignora filtro de Periodo.
+  const base=filteredIgnoringPeriod().filter(isFormalVacancy).filter(r=>r.estatus!=='CANCELADA');
+  const months=MONTH_SHORT.slice(0,9);
+
+  const series=months.map((label,mi)=>{
+    const start=new Date(2026,mi,1);
+    const end=new Date(2026,mi+1,0,23,59,59,999);
+
+    // Vacantes totales del periodo: nuevas + arrastradas activas + cubiertas durante el mes.
+    const total=base.filter(r=>{
+      const sol=d(r.solicitud);
+      if(!sol || sol>end) return false;
+
+      const ing=d(r.ingresoFecha);
+      const validIngreso=ing && ing>=sol;
+
+      const openedInPeriod=sol>=start && sol<=end;
+      const coveredInPeriod=validIngreso && ing>=start && ing<=end;
+      const activeAtPeriodEnd=validIngreso ? ing>end : r.estatus==='ACTIVA';
+
+      return openedInPeriod || coveredInPeriod || activeAtPeriodEnd;
+    }).length;
+
+    // Activas al cierre.
+    const active=base.filter(r=>{
+      const sol=d(r.solicitud);
+      if(!sol || sol>end) return false;
+      const ing=d(r.ingresoFecha);
+      if(ing && ing>=sol) return ing>end;
+      return r.estatus==='ACTIVA';
+    }).length;
+
+    // Cubiertas durante el mes, separadas por SLA de 45 días.
+    const coveredRows=base.filter(r=>{
+      const sol=d(r.solicitud), ing=d(r.ingresoFecha);
+      if(!ing) return false;
+      if(sol && ing<sol) return false;
+      return ing>=start && ing<=end;
+    });
+
+    const coveredInSla=coveredRows.filter(r=>{
+      const n=days(r.solicitud,r.ingresoFecha);
+      return n!=null && n<=45;
+    }).length;
+
+    const coveredLate=coveredRows.filter(r=>{
+      const n=days(r.solicitud,r.ingresoFecha);
+      return n!=null && n>45;
+    }).length;
+
+    return {label,total,active,coveredInSla,coveredLate};
+  });
+
+  const maxVal=Math.max(1,...series.flatMap(x=>[
+    x.total,x.active,x.coveredInSla,x.coveredLate
+  ]));
+  const ceiling=Math.max(5,Math.ceil(maxVal/5)*5);
+
+  const W=900,H=270,ml=42,mr=18,mt=24,mb=38;
+  const pw=W-ml-mr, ph=H-mt-mb;
+  const x=i=>ml+(pw/(series.length-1))*i;
+  const y=v=>mt+ph-(v/ceiling)*ph;
+
+  const ticks=5;
+  const grid=Array.from({length:ticks+1},(_,i)=>{
+    const val=Math.round(ceiling*i/ticks);
+    const yy=y(val);
+    return `<line class="trend-grid" x1="${ml}" y1="${yy}" x2="${W-mr}" y2="${yy}"></line><text class="trend-axis" x="${ml-8}" y="${yy+3}" text-anchor="end">${val}</text>`;
+  }).join('');
+
+  const labels=series.map((s,i)=>`<text class="trend-axis" x="${x(i)}" y="${H-12}" text-anchor="middle">${s.label}</text>`).join('');
+
+  const totalPts=series.map((s,i)=>`${x(i)},${y(s.total)}`).join(' ');
+  const activePts=series.map((s,i)=>`${x(i)},${y(s.active)}`).join(' ');
+  const okPts=series.map((s,i)=>`${x(i)},${y(s.coveredInSla)}`).join(' ');
+  const latePts=series.map((s,i)=>`${x(i)},${y(s.coveredLate)}`).join(' ');
+
+  const totalDots=series.map((s,i)=>`<circle class="trend-point-total" cx="${x(i)}" cy="${y(s.total)}" r="5"></circle><text class="trend-value" x="${x(i)}" y="${Math.max(12,y(s.total)-10)}" text-anchor="middle">${s.total}</text>`).join('');
+  const activeDots=series.map((s,i)=>`<circle class="trend-point-active" cx="${x(i)}" cy="${y(s.active)}" r="5"></circle><text class="trend-value" x="${x(i)}" y="${Math.min(H-42,y(s.active)+18)}" text-anchor="middle">${s.active}</text>`).join('');
+  const okDots=series.map((s,i)=>`<circle class="trend-point-covered-ok" cx="${x(i)}" cy="${y(s.coveredInSla)}" r="5"></circle><text class="trend-value" x="${x(i)-7}" y="${Math.max(14,y(s.coveredInSla)-9)}" text-anchor="end">${s.coveredInSla}</text>`).join('');
+  const lateDots=series.map((s,i)=>`<circle class="trend-point-covered-late" cx="${x(i)}" cy="${y(s.coveredLate)}" r="5"></circle><text class="trend-value" x="${x(i)+7}" y="${Math.min(H-42,y(s.coveredLate)+18)}" text-anchor="start">${s.coveredLate}</text>`).join('');
+
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tendencia mensual de vacantes totales, activas al cierre y cubiertas dentro o fuera de SLA">
+    ${grid}
+    <polyline class="trend-line-total" points="${totalPts}"></polyline>
+    <polyline class="trend-line-active" points="${activePts}"></polyline>
+    <polyline class="trend-line-covered-ok" points="${okPts}"></polyline>
+    <polyline class="trend-line-covered-late" points="${latePts}"></polyline>
+    ${totalDots}${activeDots}${okDots}${lateDots}${labels}
+  </svg>`;
+}
+
+function renderAlerts(){
+  // Alerts about late vacancies remain current/cumulative and ignore the selected month,
+  // but respect the other global filters.
+  const all=filteredIgnoringPeriod().filter(isFormalVacancy);
+  const hires=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+
+  // Current active vacancies over 45 days, regardless of opening month.
+  const late=all.filter(r=>r.estatus==='ACTIVA'&&currentCoverageDays(r)>45);
+
+  // Current active vacancies by branch.
+  const branchCounts={};
+  all.filter(r=>r.estatus==='ACTIVA').forEach(r=>branchCounts[r.sucursal]=(branchCounts[r.sucursal]||0)+1);
+  const branches=Object.values(branchCounts).filter(n=>n>5).length;
+
+  // Recruiters with more than 10 vacancies that were active during the selected period.
+  // Use the same standardized period logic as Total de vacantes, excluding canceled.
+  const periodVacancies=totalVacanciesForSelectedPeriod();
+  const recCounts={};
+  periodVacancies.forEach(r=>{
+    const key=r.reclutador||'SIN RECLUTADOR';
+    recCounts[key]=(recCounts[key]||0)+1;
+  });
+  const recs=Object.values(recCounts).filter(n=>n>10).length;
+
+  const bad=hires.filter(r=>tenureStatus(r)==='BAJA -90').length;
+  const rows=[
+    ['#E5484D','Vacantes +45 días',late.length,'late'],
+    ['#F2B544','Sucursales con +5 activas',branches,'branches'],
+    ['#8752E8','Reclutadores con +10 vacantes',recs,'recs'],
+    ['#E5484D','Bajas -90 días',bad,'bajas']
+  ];
+  document.getElementById('alerts').innerHTML=rows.map(x=>`<div class="alert-row ${x[2]>0?'metric-danger':''}" data-alert="${x[3]}"><span><i class="dot" style="background:${x[2]>0?'#E5484D':x[0]}"></i>${x[1]}</span><strong>${x[2]}</strong></div>`).join('');
+}
+function renderMatrix(){
+  // Use the same logic as the Total de vacantes KPI so the matrix and KPI reconcile.
+  // This includes vacancies opened in previous months that were still active in the selected period,
+  // plus older vacancies covered in the selected period. Canceled vacancies remain excluded.
+  const rs=totalVacanciesForSelectedPeriod();
+  const units=UNIT_ORDER.filter(u=>data.some(r=>r.unidad===u)||hiresData.some(r=>r.unidad===u));
+  const areas=[...new Set(rs.map(r=>r.area).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const grandTotal=rs.length;
+
+  let h='<thead><tr><th>UNIDAD <span class="small" style="font-weight:800">('+grandTotal+')</span></th>'+
+    areas.map(a=>{
+      const totalArea=rs.filter(r=>r.area===a).length;
+      return `<th class="matrix-area" data-area-header="${a}" style="cursor:pointer">${a}<br><span class="small" style="font-weight:900;color:#17212B">${totalArea}</span></th>`;
+    }).join('')+
+    '</tr></thead><tbody>';
+
+  units.forEach(u=>{
+    const totalUnit=rs.filter(r=>r.unidad===u).length;
+    h+=`<tr><td class="matrix-unit" data-unit-row="${u}" style="cursor:pointer">
+      <span>${u}</span>
+      <span class="badge gray" style="margin-left:7px">${totalUnit}</span>
+    </td>`;
+    areas.forEach(a=>{
+      const n=rs.filter(r=>r.unidad===u&&r.area===a).length;
+      h+=`<td>${n?`<span class="bubble" data-unit="${u}" data-area="${a}" style="background:${COLORS[u]||'#657'};color:${UNIT_TEXT_COLORS[u]||'#fff'}">${n}</span>`:'—'}</td>`;
+    });
+    h+='</tr>';
+  });
+
+  h+=`<tr style="background:#F7F9FA;font-weight:900">
+    <td>TOTAL <span class="badge gray" style="margin-left:7px">${grandTotal}</span></td>
+    ${areas.map(a=>{
+      const totalArea=rs.filter(r=>r.area===a).length;
+      return `<td class="matrix-area-total" data-area-total="${a}" style="cursor:pointer"><span class="badge gray">${totalArea}</span></td>`;
+    }).join('')}
+  </tr>`;
+
+  h+='</tbody>';
+  document.getElementById('matrix').innerHTML=h;
+}
+function renderBranches(){
+  const rs=globalFiltered('solicitud').filter(isFormalVacancy);
+  const branches=[...new Set(rs.map(r=>r.sucursal).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  let h='<thead><tr><th>Sucursal</th><th>Activas</th><th>Cubiertas</th><th>Promedio días de cobertura</th><th>+45 días activas</th></tr></thead><tbody>';
+  branches.forEach(b=>{
+    const br=rs.filter(r=>r.sucursal===b), cov=br.filter(r=>r.estatus==='CUBIERTA'&&r.solicitud&&r.ingresoFecha);
+    const vals=cov.map(coverageDays), avg=vals.length?Math.round(vals.reduce((a,c)=>a+c,0)/vals.length):null;
+    const late=br.filter(r=>r.estatus==='ACTIVA'&&coverageDays(r)>45).length;
+    h+=`<tr class="clickable" data-branch="${b}"><td><b>${b}</b></td><td>${br.filter(r=>r.estatus==='ACTIVA').length}</td><td>${br.filter(r=>r.estatus==='CUBIERTA').length}</td><td><span class="badge ${slaClass(avg)}">${avg==null?'—':avg+' días'}</span></td><td>${late?`<span class="badge red">${late}</span>`:'0'}</td></tr>`;
+  }); h+='</tbody>'; document.getElementById('branches').innerHTML=h;
+}
+function baseVacRowClass(r){
+  const n=coverageDays(r);
+  if(n==null) return '';
+  return n<30?'green':n<45?'yellow':'red';
+}
+function statusBadge(s){return s==='ACTIVA'?'<span class="badge yellow">ACTIVA</span>':s==='CUBIERTA'?'<span class="badge green">CUBIERTA</span>':s==='CANCELADA'?'<span class="badge gray">CANCELADA</span>':`<span class="badge gray">${s||'—'}</span>`}
+function renderVacOps(){
+  const active=activeVacanciesForSelectedPeriod();
+  const covered=coveredVacanciesForSelectedPeriod();
+  const risk=active.filter(r=>{const n=coverageDays(r); return n!=null && n>=30 && n<45;});
+  const late=active.filter(r=>(coverageDays(r)??-1)>=45);
+  document.getElementById('voActivas').textContent=active.length;
+  document.getElementById('voRiesgo').textContent=risk.length;
+  document.getElementById('voFuera').textContent=late.length;
+  document.getElementById('voCubiertas').textContent=covered.length;
+  setMetricDangerById('voFuera',late.length>0);
+}
+function renderVacTable(custom){
+  let rs=custom||totalVacanciesForSelectedPeriod();
+  const statusFilter=document.getElementById('vacStatusFilter')?.value||'';
+  const daysFilter=document.getElementById('vacDaysFilter')?.value||'';
+  if(!custom){
+    if(statusFilter) rs=rs.filter(r=>statusForSelectedPeriod(r)===statusFilter);
+    else rs=rs.filter(r=>['ACTIVA','CUBIERTA'].includes(statusForSelectedPeriod(r)));
+    if(daysFilter==='RISK') rs=rs.filter(r=>{const n=coverageDays(r); return n!=null && n>=30 && n<45;});
+    if(daysFilter==='OVER45') rs=rs.filter(r=>(coverageDays(r)??-1)>=45);
+    if(daysFilter==='UNDER30') rs=rs.filter(r=>{const n=coverageDays(r); return n!=null && n<30;});
+  }
+  rs=[...rs].sort((a,b)=>{
+    const aa=statusForSelectedPeriod(a)==='ACTIVA'?0:1, bb=statusForSelectedPeriod(b)==='ACTIVA'?0:1;
+    return aa-bb || (coverageDays(b)||-1)-(coverageDays(a)||-1);
+  });
+  document.getElementById('vacCount').textContent=`${rs.length} registros`;
+  let h='<thead><tr><th>Vacante</th><th>Unidad</th><th>Sucursal</th><th>Área</th><th>Reclutador</th><th>Solicitud</th><th>Estatus</th><th>Días</th><th>Alerta</th><th>Fecha contratación</th><th>Contratado</th></tr></thead><tbody>';
+  h+=rs.map(r=>`<tr class="clickable" data-id="${r.id}"><td><b>${r.vacante||'—'}</b></td><td>${r.unidad||'—'}</td><td>${r.sucursal||'—'}</td><td>${r.area||'—'}</td><td>${r.reclutador||'—'}</td><td>${fmtDate(r.solicitud)}</td><td>${statusBadge(statusForSelectedPeriod(r))}</td><td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td><td><span class="badge ${slaClass(coverageDays(r))}">${expiryAlert(coverageDays(r))}</span></td><td>${fmtDate(r.ingresoFecha)}</td><td>${r.ingreso||'—'}</td></tr>`).join('');
+  h+='</tbody>';
+  document.getElementById('vacTable').innerHTML=h;
+}
+function renderEffectiveness(){
+  const hires=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+  const cats={'ACTIVO +90':0,'ACTIVO -90':0,'BAJA +90':0,'BAJA -90':0};
+  hires.forEach(r=>cats[tenureStatus(r)]++);
+  const evaluable=cats['ACTIVO +90']+cats['BAJA +90']+cats['BAJA -90'];
+  const success=cats['ACTIVO +90']+cats['BAJA +90'];
+  const eff=evaluable?Math.round(success/evaluable*100):0;
+  document.getElementById('eEfect').textContent=eff+'%';
+  document.getElementById('eIngresos').textContent=hires.length;
+  document.getElementById('eBajas').textContent=cats['BAJA +90']+cats['BAJA -90'];
+  document.getElementById('eBajas90').textContent=cats['BAJA -90'];
+
+  // Meta de efectividad = 80%.
+  setMetricDangerById('eEfect',eff<80);
+  setMetricDangerById('eBajas90',cats['BAJA -90']>0);
+
+  document.getElementById('donutVal').textContent=eff+'%';
+  const red=100-eff; document.getElementById('donut').style.background=`conic-gradient(#18A672 0 ${eff}%, #E5484D ${eff}% 100%)`;
+  document.getElementById('effBreakdown').innerHTML=`<b>Meta:</b> 80%<br><b>Activo +90:</b> ${cats['ACTIVO +90']}<br><b>Baja +90:</b> ${cats['BAJA +90']}<br><b>Baja -90:</b> ${cats['BAJA -90']}<br><b>Activo -90 (no evaluable):</b> ${cats['ACTIVO -90']}`;
+  renderBars(hires); renderPeople(hires);
+}
+function renderBars(hires){
+  const monthly=MONTHS.slice(0,9).map((m,mi)=>{
+    const rr=hires.filter(r=>monthIndex(r.ingresoFecha)===mi);
+    const c={'ACTIVO +90':0,'ACTIVO -90':0,'BAJA +90':0,'BAJA -90':0};
+    rr.forEach(r=>c[tenureStatus(r)]++);
+    return {mi,rr,c,total:rr.length};
+  });
+
+  const maxTotal=Math.max(1,...monthly.map(x=>x.total));
+  const step=Math.max(1,Math.ceil(maxTotal/4));
+  const axisMax=step*4;
+
+  document.getElementById('effYAxis').innerHTML=[0,step,step*2,step*3,step*4].map(v=>{
+    const bottom=(v/axisMax)*100;
+    return `<span class="y-tick" style="bottom:${bottom}%">${v}</span>`;
+  }).join('');
+
+  document.getElementById('effGrid').innerHTML=[0,step,step*2,step*3,step*4].map(v=>{
+    const bottom=(v/axisMax)*100;
+    return `<div class="y-grid" style="bottom:${bottom}%"></div>`;
+  }).join('');
+
+  const colorMap={'ACTIVO +90':'#18A672','BAJA -90':'#E5484D','ACTIVO -90':'#F2B544','BAJA +90':'#1683B5'};
+  const order=['ACTIVO +90','BAJA -90','ACTIVO -90','BAJA +90'];
+
+  document.getElementById('bars').innerHTML=monthly.map(({mi,c,total})=>{
+    const height=(total/axisMax)*240;
+    const segs=order.map(k=>{
+      if(!c[k]) return '';
+      const segH=total ? (c[k]/total)*height : 0;
+      return `<div class="stack-seg" data-month="${mi}" data-status="${k}" title="${k}: ${c[k]}" style="height:${segH}px;background:${colorMap[k]}"></div>`;
+    }).join('');
+    return `<div class="stack-group">
+      ${total?`<div class="stack-total">${total}</div>`:''}
+      <div class="stack-bar" data-month="${mi}" style="height:${height}px">${segs}</div>
+      <span class="stack-label">${MONTH_SHORT[mi]}-26</span>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('#effLegend button').forEach(btn=>{
+    btn.classList.toggle('active-filter',btn.dataset.effStatus===effChartFilter);
+  });
+}
+function renderPeople(hires){
+  const f=document.getElementById('personStatus').value;
+  let rs=f?hires.filter(r=>tenureStatus(r)===f):hires;
+  if(effChartFilter) rs=rs.filter(r=>tenureStatus(r)===effChartFilter);
+  rs=[...rs].sort((a,b)=>(d(b.ingresoFecha)||0)-(d(a.ingresoFecha)||0));
+  document.getElementById('people').innerHTML=rs.length?rs.map(r=>{
+    const st=tenureStatus(r), cl=st.includes('BAJA -90')?'red':st.includes('BAJA +90')?'blue':st.includes('ACTIVO +90')?'green':'yellow';
+    const img=driveImg(r.foto);
+    return `<div class="card person" data-person="H${r.id}"><div class="person-photo">${img?`<img src="${img}" alt="${r.ingreso||''}" style="width:100%;height:100%;object-fit:cover;object-position:center center;transform:none;padding:0" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="avatar" style="display:none">${initials(r.ingreso)}</div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}</div><div class="person-body"><div class="person-name">${r.ingreso}</div><div class="person-meta">${r.vacante||'Ingreso sin vacante formal'}<br>${r.unidad} · ${r.sucursal}<br>Ingreso: ${fmtDate(r.ingresoFecha)}</div><div style="margin-top:8px"><span class="badge ${cl}">${st}</span></div></div></div>`;
+  }).join(''):'<div class="empty">No hay contrataciones para estos filtros.</div>';
+}
+
+function baseTable(rows, cols){
+  let h='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>';
+  h+=rows.map(r=>'<tr>'+cols.map(c=>`<td>${c[1](r)}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>';return h;
+}
+function renderBase(type='vac'){
+  const box=document.getElementById('baseContent');
+  if(type==='vac'){
+    let rows=totalVacanciesForSelectedPeriod();
+
+    if(baseVacStatusFilter){
+      rows=rows.filter(r=>statusForSelectedPeriod(r)===baseVacStatusFilter);
+    }
+
+    rows=[...rows].sort((a,b)=>{
+      const aa=statusForSelectedPeriod(a)==='ACTIVA'?0:1;
+      const bb=statusForSelectedPeriod(b)==='ACTIVA'?0:1;
+      return aa-bb || (coverageDays(b)||-1)-(coverageDays(a)||-1);
+    });
+
+    let h=`<div class="base-filter-bar">
+      <button class="base-filter-btn ${baseVacStatusFilter===''?'active':''}" data-base-vac-filter="">TODAS</button>
+      <button class="base-filter-btn ${baseVacStatusFilter==='ACTIVA'?'active':''}" data-base-vac-filter="ACTIVA">ACTIVAS</button>
+      <button class="base-filter-btn ${baseVacStatusFilter==='CUBIERTA'?'active':''}" data-base-vac-filter="CUBIERTA">CUBIERTAS</button>
+    </div>`;
+
+    const vacHeaders=[
+      'ID VACANTE','VACANTE','UNIDAD DE NEGOCIO','SUCURSAL','Área','RECLUTADOR','MOTIVO VACANTE','HORARIO','COMENTARIOS','SUELDO 100%','CARGA HORARIA','VALES DE DESPENSA','FECHA DE SOLICITUD','ESTATUS','DÍAS','ALERTA DE VENCIMIENTO','ACCIONES'
+    ];
+    h+='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+
+      vacHeaders.map(x=>{
+        if(x==='HORARIO') return `<th style="min-width:240px">${x}</th>`;
+        if(x==='COMENTARIOS') return `<th style="min-width:180px">${x}</th>`;
+        return `<th>${x}</th>`;
+      }).join('')+
+      '</tr></thead><tbody>';
+
+    h+=rows.map(r=>`<tr>
+      <td><b>${r.codigo||r.id||'—'}</b></td>
+      <td><b>${r.vacante||'—'}</b></td>
+      <td>${r.unidad||'—'}</td>
+      <td>${r.sucursal||'—'}</td>
+      <td>${r.area||'—'}</td>
+      <td>${r.reclutador||'—'}</td>
+      <td>${r.motivo||'—'}</td>
+      <td style="min-width:240px;white-space:normal;line-height:1.35">${r.horario||'—'}</td>
+      <td style="min-width:180px;white-space:normal;line-height:1.35">${r.comentarios||'—'}</td>
+      <td>${money(r.sueldo)}</td>
+      <td>${r.carga||'—'}</td>
+      <td>${money(r.vales)}</td>
+      <td>${fmtDate(r.solicitud)}</td>
+      <td>${baseVacStatusBadge(r)}</td>
+      <td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td>
+      <td><span class="badge ${slaClass(coverageDays(r))}">${expiryAlert(coverageDays(r))}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="row-action-btn edit" data-edit-vacancy="${r.id}" style="${accessToken?'':'display:none'}">Editar</button>
+          <button class="row-action-btn delete" data-delete-vacancy="${r.id}" style="${accessToken?'':'display:none'}">Eliminar</button>
+        </div>
+      </td>
+    </tr>`).join('');
+    h+='</tbody></table></div>';
+    box.innerHTML=h;
+  }else if(type==='cont'){
+    box.innerHTML='<div class="small" style="margin:0 0 10px">Incluye ingresos con vacante y sin requisición formal. Los ingresos sin requisición cuentan en contrataciones y efectividad, pero no en indicadores de vacantes ni tiempo de cobertura.</div>'+baseTable(globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso),[['Nombre',r=>r.ingreso],['Vacante / rol',r=>r.vacante||'—'],['Origen',r=>r.origen==='SIN REQUISICIÓN'?'<span class="badge gray">SIN REQUISICIÓN</span>':'CON VACANTE'],['Unidad',r=>r.unidad],['Sucursal',r=>r.sucursal],['Ingreso',r=>fmtDate(r.ingresoFecha)],['Estatus permanencia',r=>tenureStatus(r)]]);
+  }else if(type==='bajas'){
+    box.innerHTML=baseTable(globalHireFiltered().filter(r=>r.bajaFecha),[['Nombre',r=>r.ingreso],['Fecha ingreso',r=>fmtDate(r.ingresoFecha)],['Fecha baja',r=>fmtDate(r.bajaFecha)],['Días laborados',r=>days(r.ingresoFecha,r.bajaFecha)],['Clasificación',r=>tenureStatus(r)]]);
+  }else{
+    renderCatalogManager(box);
+  }
+}
+
+const CATALOG_KEYS = {
+  unidades:{label:'Unidades de negocio', field:'unidad'},
+  sucursales:{label:'Sucursales', field:'sucursal'},
+  areas:{label:'Áreas', field:'area'},
+  reclutadores:{label:'Reclutadores', field:'reclutador'},
+  vacantes:{label:'Vacantes / Roles', field:'vacante'}
+};
+
+function getCatalogs(){
+  let saved;
+  try{ saved=JSON.parse(localStorage.getItem('gebCatalogs')||'null'); }catch(e){ saved=null; }
+
+  const cats=saved||{};
+  Object.entries(CATALOG_KEYS).forEach(([key,cfg])=>{
+    let liveValues=[
+      ...data.map(r=>r[cfg.field]),
+      ...hiresData.map(r=>r[cfg.field])
+    ].filter(Boolean);
+
+    let savedValues=(cats[key]||[]).filter(Boolean);
+
+    if(key==='reclutadores'){
+      liveValues=liveValues.map(normalizeRecruiterName);
+      savedValues=savedValues.map(normalizeRecruiterName);
+    }
+
+    cats[key]=[...new Set([
+      ...savedValues,
+      ...liveValues
+    ])].sort((a,b)=>a.localeCompare(b,'es'));
+  });
+
+  localStorage.setItem('gebCatalogs',JSON.stringify(cats));
+  return cats;
+}
+
+function saveCatalogs(cats){
+  localStorage.setItem('gebCatalogs',JSON.stringify(cats));
+}
+
+function renderCatalogManager(box=document.getElementById('baseContent')){
+  const cats=getCatalogs();
+  box.innerHTML='<div class="catalog-grid">'+Object.entries(CATALOG_KEYS).map(([key,cfg])=>`
+    <div class="catalog-card">
+      <h3>${cfg.label}</h3>
+      <div class="catalog-list">
+        ${(cats[key]||[]).map((item,idx)=>`
+          <div class="catalog-item">
+            <span>${item}</span>
+            <div class="catalog-actions">
+              <button class="icon-btn edit" onclick="editCatalogItem('${key}',${idx})">Editar</button>
+              <button class="icon-btn delete" onclick="deleteCatalogItem('${key}',${idx})">Eliminar</button>
+            </div>
+          </div>`).join('') || '<div class="small">Sin opciones registradas.</div>'}
+      </div>
+      <div class="catalog-add">
+        <input id="add-${key}" placeholder="Agregar nueva opción">
+        <button onclick="addCatalogItem('${key}')">Agregar</button>
+      </div>
+    </div>`).join('')+'</div>';
+}
+
+function addCatalogItem(key){
+  const input=document.getElementById('add-'+key);
+  const val=(input?.value||'').trim();
+  if(!val) return;
+  const cats=getCatalogs();
+  cats[key]=cats[key]||[];
+  if(cats[key].some(x=>x.toLowerCase()===val.toLowerCase())){
+    alert('Esa opción ya existe en el catálogo.');
+    return;
+  }
+  cats[key].push(val);
+  cats[key].sort((a,b)=>a.localeCompare(b,'es'));
+  saveCatalogs(cats);
+  renderCatalogManager();
+  refreshFilterOptionsFromCatalogs();
+}
+
+function editCatalogItem(key,idx){
+  const cats=getCatalogs();
+  const current=cats[key][idx];
+  const next=prompt('Editar opción:',current);
+  if(next===null) return;
+  const val=next.trim();
+  if(!val) return;
+  if(cats[key].some((x,i)=>i!==idx && x.toLowerCase()===val.toLowerCase())){
+    alert('Esa opción ya existe en el catálogo.');
+    return;
+  }
+  const field=CATALOG_KEYS[key].field;
+  data.forEach(r=>{ if((r[field]||'').toLowerCase()===current.toLowerCase()) r[field]=val; });
+  cats[key][idx]=val;
+  cats[key].sort((a,b)=>a.localeCompare(b,'es'));
+  saveCatalogs(cats);
+  localStorage.setItem('gebRecruitData',JSON.stringify(data));
+  renderCatalogManager();
+  refreshFilterOptionsFromCatalogs();
+  renderAll();
+}
+
+function deleteCatalogItem(key,idx){
+  const cats=getCatalogs();
+  const current=cats[key][idx];
+  const inUse=data.some(r=>(r[CATALOG_KEYS[key].field]||'').toLowerCase()===current.toLowerCase());
+  if(inUse){
+    if(!confirm(`"${current}" está siendo usado en registros. ¿Quieres eliminarlo solo del catálogo? Los registros existentes conservarán ese valor.`)) return;
+  }else{
+    if(!confirm(`¿Eliminar "${current}" del catálogo?`)) return;
+  }
+  cats[key].splice(idx,1);
+  saveCatalogs(cats);
+  renderCatalogManager();
+  refreshFilterOptionsFromCatalogs();
+}
+
+
+
+function populateHireFormCatalogs(){
+  const cats=getCatalogs();
+  const setOptions=(id,values,placeholder,optional=false)=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML=`<option value="">${placeholder}</option>`+(values||[]).map(v=>`<option value="${v}">${v}</option>`).join('');
+  };
+  setOptions('nhRol',cats.vacantes||[],'Selecciona un rol');
+  setOptions('nhUnidad',cats.unidades||[],'Selecciona una unidad');
+  setOptions('nhSucursal',cats.sucursales||[],'Selecciona una sucursal');
+  setOptions('nhArea',cats.areas||[],'Selecciona un área');
+  setOptions('nhReclutador',cats.reclutadores||[],'Selecciona un reclutador');
+}
+
+function openHireModal(){
+  if(!accessToken){ alert('Inicia sesión como administrador para agregar contrataciones.'); return; }
+  populateHireFormCatalogs();
+  document.getElementById('newHireForm').reset();
+  document.getElementById('hireModal').classList.add('open');
+}
+function closeHireModal(){ document.getElementById('hireModal').classList.remove('open'); }
+
+async function saveManualHire(){
+  if(!accessToken){ alert('Inicia sesión como administrador para guardar contrataciones.'); return false; }
+  const ingreso=document.getElementById('nhNombre').value.trim();
+  const vacante=document.getElementById('nhRol').value.trim();
+  const unidad=document.getElementById('nhUnidad').value.trim();
+  const sucursal=document.getElementById('nhSucursal').value.trim();
+  const area=document.getElementById('nhArea').value.trim();
+  const reclutador=document.getElementById('nhReclutador').value.trim();
+  const ingresoFecha=document.getElementById('nhFechaIngreso').value;
+  const bajaFecha=document.getElementById('nhFechaBaja').value;
+  const foto=document.getElementById('nhFoto').value.trim();
+  const comentarios=document.getElementById('nhComentarios').value.trim();
+  if(!ingreso||!vacante||!unidad||!sucursal||!ingresoFecha){ alert('Completa todos los campos obligatorios.'); return false; }
+  try{
+    await dbInsertHire({vacanteId:'',ingreso,vacante,unidad,sucursal,area,reclutador,ingresoFecha,bajaFecha,foto,origen:'SIN REQUISICIÓN',comentarios});
+    closeHireModal();
+    await loadVacancies();
+    return true;
+  }catch(err){ console.error(err); alert('No se pudo guardar la contratación en Supabase.'); return false; }
+}
+
+function populateVacancyFormCatalogs(){
+  const cats=getCatalogs();
+
+  const setOptions=(id,values,placeholder)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const current=el.value;
+    el.innerHTML=`<option value="">${placeholder}</option>`+
+      (values||[]).map(v=>`<option value="${v}">${v}</option>`).join('');
+    if([...el.options].some(o=>o.value===current)) el.value=current;
+  };
+
+  setOptions('nvVacante',cats.vacantes||[],'Selecciona una vacante');
+  setOptions('nvUnidad',cats.unidades||[],'Selecciona una unidad');
+  setOptions('nvSucursal',cats.sucursales||[],'Selecciona una sucursal');
+  setOptions('nvArea',cats.areas||[],'Selecciona un área');
+  setOptions('nvReclutador',cats.reclutadores||[],'Selecciona un reclutador');
+}
+
+function updateVacancyStatusFields(){
+  const status=document.getElementById('nvEstatus')?.value||'ACTIVA';
+  const ingresoGroup=document.getElementById('nvIngresoFechaGroup');
+  const ingresoNameGroup=document.getElementById('nvIngresoNombreGroup');
+  const cancelGroup=document.getElementById('nvCancelacionFechaGroup');
+  const ingreso=document.getElementById('nvIngresoFecha');
+  const cancel=document.getElementById('nvCancelacionFecha');
+
+  const covered=status==='CUBIERTA';
+  const cancelled=status==='CANCELADA';
+
+  if(ingresoGroup) ingresoGroup.style.display=covered?'block':'none';
+  if(ingresoNameGroup) ingresoNameGroup.style.display=covered?'block':'none';
+  if(cancelGroup) cancelGroup.style.display=cancelled?'block':'none';
+  if(ingreso) ingreso.required=covered;
+  if(cancel) cancel.required=cancelled;
+}
+
+function openVacancyModal(editId=''){
+  populateVacancyFormCatalogs();
+  const form=document.getElementById('newVacancyForm');
+  form.reset();
+  editingVacancyId=editId||'';
+
+  const title=document.getElementById('vacancyModalTitle');
+  const saveBtn=document.getElementById('saveVacancyBtn');
+
+  if(editingVacancyId){
+    const row=data.find(x=>x.id===editingVacancyId);
+    if(row){
+      title.textContent='Editar vacante';
+      saveBtn.textContent='Guardar cambios';
+      document.getElementById('nvVacante').value=row.vacante||'';
+      document.getElementById('nvUnidad').value=row.unidad||'';
+      document.getElementById('nvSucursal').value=row.sucursal||'';
+      document.getElementById('nvArea').value=row.area||'';
+      document.getElementById('nvReclutador').value=row.reclutador||'';
+      document.getElementById('nvPlazas').value=row.plazas||1;
+      document.getElementById('nvMotivo').value=row.motivo||'';
+      document.getElementById('nvSolicitud').value=row.solicitud||'';
+      document.getElementById('nvEstatus').value=row.estatus||'ACTIVA';
+      document.getElementById('nvIngresoFecha').value=row.ingresoFecha||'';
+      document.getElementById('nvIngresoNombre').value=row.ingreso||'';
+      document.getElementById('nvCancelacionFecha').value=row.cancelacionFecha||'';
+      document.getElementById('nvHorario').value=row.horario||'';
+      document.getElementById('nvComentarios').value=row.comentarios||'';
+      document.getElementById('nvSueldo').value=row.sueldo||'';
+      document.getElementById('nvCarga').value=row.carga||'';
+      document.getElementById('nvVales').value=row.vales||'';
+    }
+  }else{
+    title.textContent='Nueva vacante';
+    saveBtn.textContent='Guardar vacante';
+    document.getElementById('nvPlazas').value=1;
+    document.getElementById('nvEstatus').value='ACTIVA';
+    document.getElementById('nvIngresoFecha').value='';
+    document.getElementById('nvIngresoNombre').value='';
+    document.getElementById('nvCancelacionFecha').value='';
+  }
+
+  updateVacancyStatusFields();
+  document.getElementById('vacancyModal').classList.add('open');
+}
+
+function closeVacancyModal(){
+  editingVacancyId='';
+  document.getElementById('vacancyModal').classList.remove('open');
+}
+
+async function saveVacancyFromForm(){
+  if(!accessToken){ alert('Inicia sesión como administrador para guardar cambios.'); return false; }
+
+  const vacante=document.getElementById('nvVacante').value.trim();
+  const unidad=document.getElementById('nvUnidad').value.trim();
+  const sucursal=document.getElementById('nvSucursal').value.trim();
+  const area=document.getElementById('nvArea').value.trim();
+  const reclutador=document.getElementById('nvReclutador').value.trim();
+  const plazas=parseInt(document.getElementById('nvPlazas').value||'1',10);
+  const motivo=document.getElementById('nvMotivo').value.trim();
+  const horario=document.getElementById('nvHorario').value.trim();
+  const comentarios=document.getElementById('nvComentarios').value.trim();
+  const sueldo=parseFloat(document.getElementById('nvSueldo').value||'0');
+  const carga=parseFloat(document.getElementById('nvCarga').value||'0');
+  const vales=parseFloat(document.getElementById('nvVales').value||'0');
+  const solicitud=document.getElementById('nvSolicitud').value;
+  const estatus=document.getElementById('nvEstatus').value;
+  const ingresoFecha=document.getElementById('nvIngresoFecha').value;
+  const ingresoNombre=document.getElementById('nvIngresoNombre').value.trim();
+  const cancelacionFecha=document.getElementById('nvCancelacionFecha').value;
+
+  if(!vacante||!unidad||!sucursal||!area||!reclutador||!motivo||!solicitud||!estatus){
+    alert('Completa todos los campos obligatorios.');
+    return false;
+  }
+  if(estatus==='CUBIERTA' && !ingresoFecha){
+    alert('Para marcar una vacante como CUBIERTA debes indicar la fecha de ingreso.');
+    return false;
+  }
+  if(estatus==='CANCELADA' && !cancelacionFecha){
+    alert('Para marcar una vacante como CANCELADA debes indicar la fecha de cancelación.');
+    return false;
+  }
+  if(estatus==='CUBIERTA' && ingresoFecha<solicitud){
+    alert('La fecha de ingreso no puede ser anterior a la fecha de solicitud.');
+    return false;
+  }
+  if(estatus==='CANCELADA' && cancelacionFecha<solicitud){
+    alert('La fecha de cancelación no puede ser anterior a la fecha de solicitud.');
+    return false;
+  }
+
+  const payload={
+    vacante,unidad,sucursal,area,reclutador,
+    plazas:Math.max(1,plazas||1),
+    motivo,horario,comentarios,
+    sueldo:isNaN(sueldo)?0:sueldo,
+    carga:isNaN(carga)?0:carga,
+    vales:isNaN(vales)?0:vales,
+    solicitud,estatus,
+    ingresoFecha:estatus==='CUBIERTA'?ingresoFecha:'',
+    ingreso:estatus==='CUBIERTA'?ingresoNombre:'',
+    cancelacionFecha:estatus==='CANCELADA'?cancelacionFecha:'',
+    bajaFecha:'',
+    foto:''
+  };
+
+  try{
+    if(editingVacancyId){
+      const current=data.find(x=>x.id===editingVacancyId);
+      await dbUpdateVacancy(editingVacancyId,vacancyToDb({...current,...payload}));
+    }else{
+      await dbInsertVacancy(payload);
+    }
+    closeVacancyModal();
+    await loadVacancies();
+    return true;
+  }catch(err){
+    console.error(err);
+    alert('No se pudo guardar la vacante en Supabase.');
+    return false;
+  }
+}
+
+async function deleteVacancy(id){
+  if(!accessToken){ alert('Inicia sesión como administrador para eliminar vacantes.'); return; }
+  const row=data.find(x=>x.id===id);
+  if(!row) return;
+  if(!confirm(`¿Eliminar la vacante "${row.vacante||'SIN NOMBRE'}"? Esta acción quitará el registro.`)) return;
+  try{ await dbDeleteVacancy(id); await loadVacancies(); }
+  catch(err){ console.error(err); alert('No se pudo eliminar la vacante en Supabase.'); }
+}
+
+
+function refreshFilterOptionsFromCatalogs(){
+  const cats=getCatalogs();
+  renderMultiSelect('unidad',cats.unidades||distinct('unidad'));
+  renderMultiSelect('sucursal',cats.sucursales||distinct('sucursal'));
+  renderMultiSelect('area',cats.areas||distinct('area'));
+  renderMultiSelect('reclutador',cats.reclutadores||distinct('reclutador'));
+  populateVacancyFormCatalogs();
+}
+
+function openDrawer(r,person=false){
+  const st=tenureStatus(r), cd=coverageDays(r), img=driveImg(r.foto);
+  document.getElementById('drawerContent').innerHTML=person?`
+    <div style="display:flex;gap:15px;align-items:center">${img?`<div style="width:120px;aspect-ratio:4/5;border-radius:15px;overflow:hidden;background:#ECEBE8;flex:0 0 auto"><img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:center center"></div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}<div><div class="small">FICHA DE COLABORADOR</div><h3>${r.ingreso||'Sin nombre'}</h3><span class="badge ${st==='BAJA -90'?'red':st==='BAJA +90'?'blue':st==='ACTIVO +90'?'green':'yellow'}">${st}</span></div></div>
+    <div class="drawer-grid">
+      <div class="field"><b>Unidad</b>${r.unidad||'—'}</div><div class="field"><b>Sucursal</b>${r.sucursal||'—'}</div>
+      <div class="field"><b>Rol / vacante</b>${r.vacante||'INGRESO SIN REQUISICIÓN FORMAL'}</div><div class="field"><b>Área</b>${r.area||'—'}</div>
+      <div class="field"><b>Reclutador</b>${r.reclutador||'—'}</div><div class="field"><b>Fecha de ingreso</b>${fmtDate(r.ingresoFecha)}</div>
+      <div class="field"><b>Fecha de baja</b>${fmtDate(r.bajaFecha)}</div><div class="field"><b>Días en la empresa</b>${r.ingresoFecha?days(r.ingresoFecha,r.bajaFecha||'2026-09-11'):'—'}</div>
+      <div class="field" style="grid-column:1/-1"><b>Motivo de baja</b>No disponible en ACUMULADO 2026</div>
+    </div>`:`
+    <div class="small">DETALLE DE VACANTE</div><h3>${r.vacante||'Vacante'}</h3>${statusBadge(r.estatus)}
+    <div class="drawer-grid">
+      <div class="field"><b>ID de vacante</b>${r.codigo||'—'}</div>
+      <div class="field"><b>Unidad</b>${r.unidad||'—'}</div><div class="field"><b>Sucursal</b>${r.sucursal||'—'}</div>
+      <div class="field"><b>Área</b>${r.area||'—'}</div><div class="field"><b>Reclutador</b>${r.reclutador||'—'}</div>
+      <div class="field"><b>Motivo</b>${r.motivo||'—'}</div><div class="field"><b>N° de plazas</b>${r.plazas}</div>
+      <div class="field"><b>Fecha solicitud</b>${fmtDate(r.solicitud)}</div><div class="field"><b>Días</b>${cd??'Sin fecha de solicitud'}</div>
+      <div class="field"><b>Fecha ingreso</b>${fmtDate(r.ingresoFecha)}</div><div class="field"><b>Fecha cancelación</b>${fmtDate(r.cancelacionFecha)}</div><div class="field"><b>Contratado</b>${r.ingreso||'—'}</div>
+      <div class="field"><b>Sueldo 100%</b>${money(r.sueldo)}</div><div class="field"><b>Vales</b>${money(r.vales)}</div>
+      <div class="field" style="grid-column:1/-1"><b>Horario</b>${r.horario||'—'}</div>
+    </div>
+    ${r.ingreso?`<button class="btn primary" style="margin-top:15px" onclick="openDrawer(data.find(x=>x.id==='${r.id}'),true)">Ver ficha del colaborador</button>`:'<button class="btn primary" style="margin-top:15px" onclick="registerHire(\''+r.id+'\')">Registrar ingreso</button>'}`;
+  document.getElementById('drawerWrap').classList.add('open');
+}
+async function registerHire(id){
+  if(!accessToken){ alert('Inicia sesión como administrador para registrar ingresos.'); return; }
+  const r=data.find(x=>x.id===id); if(!r)return;
+  const name=prompt('Nombre de la persona que ingresó:'); if(!name)return;
+  const f=prompt('Fecha de ingreso real (AAAA-MM-DD):'); if(!f)return;
+  try{
+    await dbUpdateVacancy(id,{nombre_ingreso:name,fecha_ingreso_real:f,estatus:'CUBIERTA'});
+    await dbInsertHire({
+      vacanteId:r.id,
+      ingreso:name,
+      vacante:r.vacante,
+      unidad:r.unidad,
+      sucursal:r.sucursal,
+      area:r.area,
+      reclutador:r.reclutador,
+      ingresoFecha:f,
+      bajaFecha:'',
+      foto:'',
+      origen:'CON VACANTE',
+      comentarios:''
+    });
+    closeDrawer();
+    await loadVacancies();
+  }catch(err){
+    console.error(err);
+    alert('No se pudo registrar el ingreso en Supabase.');
+  }
+}
+
+function openTotalVacanciesDetail(){
+  const included=totalVacanciesForSelectedPeriod();
+
+  const bounds=selectedMonthBounds();
+
+  const canceled=data.filter(r=>{
+    if(!isFormalVacancy(r)) return false;
+    if(r.estatus!=='CANCELADA') return false;
+    if(!multiMatches('unidad',r.unidad)) return false;
+    if(!multiMatches('sucursal',r.sucursal)) return false;
+    if(!multiMatches('area',r.area)) return false;
+    if(!multiMatches('reclutador',r.reclutador)) return false;
+
+    const solicitud=d(r.solicitud);
+    if(!solicitud) return false;
+    if(!bounds) return solicitud.getFullYear()===2026;
+    return solicitud>=bounds.start && solicitud<=bounds.end;
+  });
+
+  const rowHtml=(r)=>`
+    <tr class="clickable" onclick="openDrawer(data.find(x=>x.id==='${r.id}'))">
+      <td><b>${r.vacante||'—'}</b></td>
+      <td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td>
+      <td>${r.unidad||'—'}</td>
+      <td>${r.sucursal||'—'}</td>
+      <td>${r.area||'—'}</td>
+      <td>${r.reclutador||'—'}</td>
+      <td>${statusBadge(statusForSelectedPeriod(r))}</td>
+    </tr>`;
+
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="small">DETALLE DE VACANTES</div>
+    <h3>Total de vacantes</h3>
+    <div class="small" style="margin-bottom:14px">
+      KPI: ${included.length} · Las canceladas se muestran abajo solo como referencia y no suman al total.
+    </div>
+
+    <div style="font-weight:900;margin:10px 0 8px">Incluidas en el total (${included.length})</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID vacante</th><th>Vacante</th><th>Días</th><th>Unidad de negocio</th><th>Sucursal</th><th>Área</th><th>Reclutador</th><th>Estatus</th></tr></thead>
+        <tbody>${included.map(rowHtml).join('')}</tbody>
+      </table>
+    </div>
+
+    <div style="font-weight:900;margin:18px 0 8px">Canceladas del periodo (${canceled.length})</div>
+    ${canceled.length?`
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vacante</th><th>Días</th><th>Unidad de negocio</th><th>Sucursal</th><th>Área</th><th>Reclutador</th><th>Estatus</th></tr></thead>
+          <tbody>${canceled.map(rowHtml).join('')}</tbody>
+        </table>
+      </div>`:'<div class="empty">No hay vacantes canceladas en el periodo.</div>'}
+  `;
+  document.getElementById('drawerWrap').classList.add('open');
+}
+
+
+function openHiresList(rows,title){
+  const sorted=[...rows].sort((a,b)=>(d(b.ingresoFecha)||0)-(d(a.ingresoFecha)||0));
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="small">DETALLE DE CONTRATACIONES</div>
+    <h3>${title}</h3>
+    <div class="small" style="margin-bottom:14px">${sorted.length} contratación(es)</div>
+    ${sorted.length?`
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nombre</th><th>Rol</th><th>Unidad</th><th>Sucursal</th><th>Reclutador</th><th>Fecha ingreso</th><th>Origen</th></tr></thead>
+          <tbody>
+            ${sorted.map(r=>`
+              <tr class="clickable" data-hire-detail="${r.id}">
+                <td><b>${r.ingreso||'—'}</b></td>
+                <td>${r.vacante||'—'}</td>
+                <td>${r.unidad||'—'}</td>
+                <td>${r.sucursal||'—'}</td>
+                <td>${r.reclutador||'—'}</td>
+                <td>${fmtDate(r.ingresoFecha)}</td>
+                <td>${r.origen||'—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`:'<div class="empty">Sin contrataciones.</div>'}`;
+  document.getElementById('drawerWrap').classList.add('open');
+}
+
+function openList(rows,title){
+  const sorted=[...rows].sort((a,b)=>(coverageDays(b)||0)-(coverageDays(a)||0));
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="small">DETALLE DE VACANTES</div>
+    <h3>${title}</h3>
+    <div class="small" style="margin-bottom:14px">${sorted.length} vacante(s)</div>
+    ${sorted.length?`
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Vacante</th>
+              <th>Días</th>
+              <th>Unidad de negocio</th>
+              <th>Sucursal</th>
+              <th>Área</th>
+              <th>Reclutador</th>
+              <th>Estatus</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(r=>`
+              <tr class="clickable" onclick="openDrawer(data.find(x=>x.id==='${r.id}'))">
+                <td><b>${r.vacante||'—'}</b></td>
+                <td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td>
+                <td>${r.unidad||'—'}</td>
+                <td>${r.sucursal||'—'}</td>
+                <td>${r.area||'—'}</td>
+                <td>${r.reclutador||'—'}</td>
+                <td>${statusBadge(statusForSelectedPeriod(r))}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`:'<div class="empty">Sin registros.</div>'}`;
+  document.getElementById('drawerWrap').classList.add('open');
+}
+
+function openHeavyRecruiterDetail(rows){
+  const grouped={};
+  rows.forEach(r=>{
+    const key=r.reclutador||'SIN RECLUTADOR';
+    if(!grouped[key]) grouped[key]=[];
+    grouped[key].push(r);
+  });
+  const recruiters=Object.keys(grouped)
+    .filter(rec=>grouped[rec].length>10)
+    .sort((a,b)=>grouped[b].length-grouped[a].length || a.localeCompare(b,'es'));
+
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="small">DETALLE DE ALERTA</div>
+    <h3>Reclutadores con +10 vacantes</h3>
+    <div class="small" style="margin-bottom:14px">
+      ${recruiters.length} reclutador(es) con más de 10 vacantes asignadas que estuvieron activas en el periodo seleccionado.
+      El detalle muestra únicamente vacantes activas o cubiertas del periodo seleccionado.
+    </div>
+    ${recruiters.length?recruiters.map(rec=>`
+      <div style="margin:16px 0 8px;display:flex;justify-content:space-between;align-items:center">
+        <strong>${rec}</strong>
+        <span class="badge gray">${grouped[rec].length} vacantes</span>
+      </div>
+      <div style="display:grid;gap:8px">
+        ${grouped[rec].sort((a,b)=>{
+          const sa=statusForSelectedPeriod(a)==='ACTIVA'?0:1, sb=statusForSelectedPeriod(b)==='ACTIVA'?0:1;
+          return sa-sb || (coverageDays(b)||0)-(coverageDays(a)||0);
+        }).map(r=>`
+          <div class="alert-row" onclick="openDrawer(data.find(x=>x.id==='${r.id}'))">
+            <span>
+              <b>${r.vacante||'—'}</b><br>
+              <span class="small">${r.unidad||'—'} · ${r.sucursal||'—'} · ${r.area||'—'}</span>
+            </span>
+            <span style="text-align:right">
+              ${statusBadge(statusForSelectedPeriod(r))}<br>
+              <span class="small">${coverageDays(r)??'—'} días</span>
+            </span>
+          </div>`).join('')}
+      </div>`).join(''):'<div class="empty">No hay reclutadores con más de 10 vacantes asignadas.</div>'}`;
+  document.getElementById('drawerWrap').classList.add('open');
+}
+
+function closeDrawer(){document.getElementById('drawerWrap').classList.remove('open')}
+function renderAll(){
+  renderKPIs();renderGauges();renderAlerts();renderRecruitmentTrend();renderMatrix();renderVacOps();renderVacTable();renderEffectiveness();
+  const activeBase=document.querySelector('.subtab.active')?.dataset.base||'vac'; renderBase(activeBase);
+}
+document.addEventListener('click',e=>{
+  const multiToggle=e.target.closest('[data-multi-toggle]');
+  if(multiToggle){
+    const key=multiToggle.dataset.multiToggle;
+    const wrap=document.getElementById(`${key}Multi`);
+    document.querySelectorAll('.multi-select.open').forEach(x=>{if(x!==wrap)x.classList.remove('open')});
+    wrap.classList.toggle('open');
+    return;
+  }
+
+  const multiAll=e.target.closest('[data-multi-all]');
+  if(multiAll){
+    const key=multiAll.dataset.multiAll;
+    document.querySelectorAll(`#${key}Menu input[data-multi-key="${key}"]`).forEach(cb=>{
+      cb.checked=true;
+      selectedFilters[key].add(cb.value);
+    });
+    updateMultiLabel(key); renderAll(); return;
+  }
+
+  const multiClear=e.target.closest('[data-multi-clear]');
+  if(multiClear){
+    const key=multiClear.dataset.multiClear;
+    selectedFilters[key].clear();
+    document.querySelectorAll(`#${key}Menu input[data-multi-key="${key}"]`).forEach(cb=>cb.checked=false);
+    updateMultiLabel(key); renderAll(); return;
+  }
+
+  if(!e.target.closest('.multi-select')) document.querySelectorAll('.multi-select.open').forEach(x=>x.classList.remove('open'));
+
+
+  const tab=e.target.closest('.tab'); if(tab){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));tab.classList.add('active');['resumen','vacantes','efectividad','base'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hidden',x!==tab.dataset.tab));}
+  const row=e.target.closest('#vacTable tr[data-id]'); if(row) openDrawer(data.find(x=>x.id===row.dataset.id));
+  const hireRow=e.target.closest('[data-hire-detail]'); if(hireRow) openDrawer(hiresData.find(x=>x.id===hireRow.dataset.hireDetail),true);
+  const person=e.target.closest('.person[data-person]'); if(person){const hid=person.dataset.person.replace(/^H/,'');openDrawer(hiresData.find(x=>x.id===hid),true);}
+  const vacOp=e.target.closest('.vac-op[data-vac-op]');
+  if(vacOp){
+    const active=activeVacanciesForSelectedPeriod(), covered=coveredVacanciesForSelectedPeriod();
+    let rows=[], title='';
+    if(vacOp.dataset.vacOp==='activas'){rows=active;title='Vacantes activas';}
+    if(vacOp.dataset.vacOp==='riesgo'){rows=active.filter(r=>{const n=coverageDays(r);return n!=null&&n>=30&&n<45;});title='Vacantes por vencer';}
+    if(vacOp.dataset.vacOp==='fuera'){rows=active.filter(r=>(coverageDays(r)??-1)>=45);title='Vacantes fuera de SLA';}
+    if(vacOp.dataset.vacOp==='cubiertas'){rows=covered;title='Vacantes cubiertas';}
+    openList(rows,title);
+  }
+  const legendBtn=e.target.closest('#effLegend button[data-eff-status]'); if(legendBtn){
+    effChartFilter = effChartFilter===legendBtn.dataset.effStatus ? '' : legendBtn.dataset.effStatus;
+    renderEffectiveness();
+  }
+  const seg=e.target.closest('.stack-seg[data-status]'); if(seg){
+    effChartFilter=seg.dataset.status;
+    const period=document.getElementById('periodo');
+    period.value=seg.dataset.month;
+    renderAll();
+  }
+  const stack=e.target.closest('.stack-bar[data-month]'); if(stack && !e.target.closest('.stack-seg')){
+    effChartFilter='';
+    document.getElementById('periodo').value=stack.dataset.month;
+    renderAll();
+  }
+  const bub=e.target.closest('.bubble'); if(bub){
+    const rs=totalVacanciesForSelectedPeriod().filter(r=>r.unidad===bub.dataset.unit&&r.area===bub.dataset.area);
+    openList(rs,`${bub.dataset.unit} · ${bub.dataset.area}`);
+  }
+  const unitCell=e.target.closest('.matrix-unit'); if(unitCell){
+    const rs=totalVacanciesForSelectedPeriod().filter(r=>r.unidad===unitCell.dataset.unitRow);
+    openList(rs,`Unidad de negocio · ${unitCell.dataset.unitRow}`);
+  }
+  const areaHead=e.target.closest('.matrix-area'); if(areaHead){
+    const rs=totalVacanciesForSelectedPeriod().filter(r=>r.area===areaHead.dataset.areaHeader);
+    openList(rs,`Área · ${areaHead.dataset.areaHeader}`);
+  }
+  const areaTotal=e.target.closest('.matrix-area-total'); if(areaTotal){
+    const rs=totalVacanciesForSelectedPeriod().filter(r=>r.area===areaTotal.dataset.areaTotal);
+    openList(rs,`Área · ${areaTotal.dataset.areaTotal}`);
+  }
+  const k=e.target.closest('.kpi[data-kpi]'); if(k){
+    if(k.dataset.kpi==='total'){
+      openTotalVacanciesDetail();
+    }else if(k.dataset.kpi==='contrataciones'){
+      openHiresList(globalHireFiltered(),k.querySelector('.label').textContent);
+    }else{
+      const map={
+        activas:activeVacanciesForSelectedPeriod(),
+        cubiertas:coveredVacanciesForSelectedPeriod()
+      };
+      openList(map[k.dataset.kpi],k.querySelector('.label').textContent);
+    }
+  }
+  const a=e.target.closest('.alert-row[data-alert]'); if(a){
+    const all=filteredIgnoringPeriod().filter(isFormalVacancy);
+    const hire=globalHireFiltered().filter(r=>r.ingreso);
+    if(a.dataset.alert==='late'){
+      openList(all.filter(r=>r.estatus==='ACTIVA'&&currentCoverageDays(r)>45),'Vacantes actualmente fuera de SLA');
+    }
+    if(a.dataset.alert==='recs'){
+      openHeavyRecruiterDetail(totalVacanciesForSelectedPeriod().filter(r=>['ACTIVA','CUBIERTA'].includes(statusForSelectedPeriod(r))));
+    }
+    if(a.dataset.alert==='bajas'){
+      openList(hire.filter(r=>tenureStatus(r)==='BAJA -90'),'Bajas antes de 90 días');
+    }
+  }
+  const st=e.target.closest('.subtab'); if(st){document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));st.classList.add('active');renderBase(st.dataset.base)}
+  const baseVacBtn=e.target.closest('.base-filter-btn[data-base-vac-filter]');
+  if(baseVacBtn){
+    baseVacStatusFilter=baseVacBtn.dataset.baseVacFilter || '';
+    renderBase('vac');
+  }
+  const editVac=e.target.closest('[data-edit-vacancy]');
+  if(editVac){
+    openVacancyModal(editVac.dataset.editVacancy);
+  }
+  const deleteVac=e.target.closest('[data-delete-vacancy]');
+  if(deleteVac){
+    deleteVacancy(deleteVac.dataset.deleteVacancy);
+  }
+});
+document.getElementById('adminBtn').onclick=()=>{
+  document.getElementById('adminLoginMsg').textContent='';
+  document.getElementById('adminModal').classList.add('open');
+};
+document.getElementById('closeAdminModal').onclick=()=>document.getElementById('adminModal').classList.remove('open');
+document.getElementById('adminModal').addEventListener('click',e=>{if(e.target.id==='adminModal')document.getElementById('adminModal').classList.remove('open')});
+document.getElementById('logoutBtn').onclick=()=>{
+  logoutAdmin();
+  document.getElementById('adminModal').classList.remove('open');
+};
+document.getElementById('adminLoginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const msg=document.getElementById('adminLoginMsg');
+  msg.textContent='Ingresando…';
+  try{
+    await loginAdmin(document.getElementById('adminEmail').value.trim(),document.getElementById('adminPassword').value);
+    msg.textContent='Acceso correcto.';
+    document.getElementById('adminModal').classList.remove('open');
+  }catch(err){ msg.textContent=err.message; }
+});
+
+document.getElementById('closeDrawer').onclick=closeDrawer;
+document.getElementById('drawerWrap').addEventListener('click',e=>{if(e.target.id==='drawerWrap')closeDrawer()});
+document.getElementById('personStatus').addEventListener('change',()=>renderEffectiveness());
+document.getElementById('vacStatusFilter').addEventListener('change',()=>renderVacTable());
+document.getElementById('vacDaysFilter').addEventListener('change',()=>renderVacTable());
+
+document.getElementById('newHireBtn').onclick=openHireModal;
+document.getElementById('closeHireModal').onclick=closeHireModal;
+document.getElementById('cancelHireModal').onclick=closeHireModal;
+document.getElementById('hireModal').addEventListener('click',e=>{if(e.target.id==='hireModal')closeHireModal()});
+document.getElementById('newHireForm').addEventListener('submit',async e=>{e.preventDefault();await saveManualHire();});
+document.getElementById('newVacBtn').onclick=()=>openVacancyModal();
+document.getElementById('closeVacancyModal').onclick=closeVacancyModal;
+document.getElementById('cancelVacancyModal').onclick=closeVacancyModal;
+document.getElementById('nvEstatus').addEventListener('change',updateVacancyStatusFields);
+
+document.getElementById('vacancyModal').addEventListener('click',e=>{
+  if(e.target.id==='vacancyModal') closeVacancyModal();
+});
+document.getElementById('newVacancyForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  saveVacancyFromForm();
+});
+updateAdminUi();
+document.addEventListener('change',e=>{
+  const cb=e.target.closest('input[data-multi-key]');
+  if(!cb) return;
+  const key=cb.dataset.multiKey;
+  if(cb.checked) selectedFilters[key].add(cb.value);
+  else selectedFilters[key].delete(cb.value);
+  updateMultiLabel(key);
+  renderAll();
+});
+
+loadVacancies();
+</script>
+</body></html>
