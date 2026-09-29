@@ -134,11 +134,6 @@ button:disabled{opacity:.5;cursor:default;transform:none}
           <div class="chips" data-chips="radio" data-name="area"></div>
         </div>
 
-        <div class="q" data-key="plazas" data-req>
-          <div class="label">Número de vacantes</div>
-          <div class="chips" data-chips="radio" data-name="plazas"></div>
-        </div>
-
         <div class="q" data-key="fechaIngreso" data-req>
           <label for="fechaIngreso">Fecha requerida de ingreso</label>
           <input class="line" id="fechaIngreso" type="date" style="max-width:240px">
@@ -259,7 +254,6 @@ const $=id=>document.getElementById(id);
 
 const OPTIONS={
   area:['Recepción','Comercial','Mantenimiento','Orden y Limpieza','Coaches','Nutrición','Concierge','Kids','Dirección','Capital Humano','Sistemas'],
-  plazas:['1','2','3','4','5'],
   tipo:['Reemplazo','Nueva posición','Incremento de plantilla','Temporal','Proyecto especial'],
   escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Licenciatura','Maestría'],
   genero:['Masculino','Femenino','Indistinto'],
@@ -377,7 +371,7 @@ $('f').addEventListener('submit',async e=>{
     sucursal:one('sucursal'),
     unidad_negocio:one('unidad'),
     area:one('area'),
-    numero_plazas:parseInt(one('plazas'),10),
+    numero_plazas:1,
     fecha_requerida_ingreso:$('fechaIngreso').value,
     tipo_requisicion:tipo,
     motivo_vacante:tipo==='Reemplazo'?'Reemplazo':'Nueva creación',
