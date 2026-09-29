@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GEB | Requisición de talento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E100C;--panel:#161912;--ink:#F4F5EF;--muted:#9A9E90;--line:#2B2F25;
+  --lime:#C8F76B;--lime-ink:#1B2308;--red:#FF7A6B;
+  --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:var(--line);z-index:20}
+.progress i{display:block;height:100%;width:0;background:var(--lime);transition:width .25s}
+
+main{max-width:720px;margin:0 auto;padding:72px 22px 150px}
+.brand{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,52px);line-height:1.02;letter-spacing:-.02em;margin:14px 0 14px}
+.lead{color:var(--muted);max-width:580px;margin:0 0 14px}
+.note{border-left:2px solid var(--lime);padding:2px 0 2px 14px;color:var(--muted);font-size:14px;margin:22px 0 0;max-width:580px}
+.note b{color:var(--ink)}
+
+section{margin-top:64px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);display:flex;align-items:center;gap:8px}
+.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--lime)}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);letter-spacing:-.015em;line-height:1.1;margin:10px 0 0}
+
+.q{margin-top:34px}
+.q>label,.q>.label{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
+.q .hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+.opt{color:var(--muted);font-weight:400;font-size:13px}
+.q.err>label,.q.err>.label{color:var(--red)}
+.q.err .line,.q.err .box{border-color:var(--red)}
+
+.line,.box{width:100%;background:transparent;color:var(--ink);font:inherit;border:0;border-bottom:1px solid #3A3F32;padding:10px 2px;border-radius:0;transition:border-color .15s}
+.box{border:1px solid #3A3F32;border-radius:12px;padding:12px 14px;resize:vertical;min-height:96px}
+.line:focus,.box:focus{outline:0;border-color:var(--lime)}
+.line::placeholder,.box::placeholder{color:#5F6455}
+input[type=date]{color-scheme:dark}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{display:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.chips label{position:relative;cursor:pointer}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid #3A3F32;border-radius:999px;font-size:14px;font-weight:500;color:var(--ink);transition:all .12s;user-select:none}
+.chips label:hover span{border-color:#6A705C}
+.chips input:checked+span{background:var(--lime);border-color:var(--lime);color:var(--lime-ink);font-weight:600}
+.chips input:checked+span:before{content:"✓";font-weight:800}
+.chips input:focus-visible+span{outline:2px solid var(--lime);outline-offset:2px}
+.q.err .chips span{border-color:var(--red)}
+
+.money{display:flex;align-items:center;gap:6px}
+.money b{color:var(--muted);font-weight:500}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(transparent,var(--bg) 35%);padding:38px 22px 18px}
+.bar div{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.status{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.status.bad{color:var(--red)}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:14px 30px;background:var(--lime);color:var(--lime-ink);cursor:pointer;transition:transform .1s,opacity .15s}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:default;transform:none}
+button.ghost{background:#23271D;color:var(--ink)}
+
+.done{text-align:center;padding:90px 0}
+.done .tick{width:72px;height:72px;border-radius:50%;background:var(--lime);color:var(--lime-ink);font-size:36px;font-weight:800;display:grid;place-items:center;margin:0 auto 26px}
+.done .lead{margin:0 auto 28px}
+.hp{position:absolute;left:-9999px}
+.hidden{display:none!important}
+@media(max-width:560px){main{padding-top:54px}.status{display:none}.bar div{justify-content:center}}
+</style>
+</head>
+<body>
+<div class="progress"><i id="prog"></i></div>
+
+<main>
+  <div id="formWrap">
+    <div class="brand">GEB · Atracción y Selección del Talento</div>
+    <h1>Requisición de talento</h1>
+    <p class="lead">Reúne la información necesaria para iniciar un proceso de reclutamiento de forma eficiente y oportuna. Ten a la mano el perfil, horario, condiciones y justificación del puesto.</p>
+    <p class="note"><b>Solicitudes incompletas</b> pueden ser devueltas para su corrección. La <b>fecha de ingreso solicitada no garantiza</b> la cobertura en ese plazo: depende de la complejidad del perfil, la disponibilidad de candidatos y el proceso de selección.</p>
+
+    <form id="f" novalidate autocomplete="off">
+
+      <section>
+        <div class="eyebrow">01 · Solicitante</div>
+        <h2>¿Quién solicita y para dónde?</h2>
+
+        <div class="q" data-key="solicitante" data-req>
+          <label for="solicitante">Datos generales del solicitante</label>
+          <p class="hint">Nombre completo, puesto y un medio de contacto.</p>
+          <textarea class="box" id="solicitante" rows="2" placeholder="Ej. Ana Pérez · Gerente de sucursal · ana@empresa.com"></textarea>
+        </div>
+
+        <div class="q" data-key="puesto" data-req>
+          <label for="puesto">Puesto solicitado</label>
+          <input class="line" id="puesto" list="puestos" placeholder="Ej. Recepcionista">
+          <datalist id="puestos"></datalist>
+        </div>
+
+        <div class="q" data-key="sucursal" data-req>
+          <div class="label">Sucursal</div>
+          <div class="chips" data-chips="radio" data-name="sucursal"></div>
+        </div>
+
+        <div class="q" data-key="area" data-req>
+          <div class="label">Área</div>
+          <div class="chips" data-chips="radio" data-name="area"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">02 · Vacante</div>
+        <h2>Detalles de la requisición</h2>
+
+        <div class="q" data-key="plazas" data-req>
+          <div class="label">Número de vacantes</div>
+          <div class="chips" data-chips="radio" data-name="plazas"></div>
+        </div>
+
+        <div class="q" data-key="fechaIngreso" data-req>
+          <label for="fechaIngreso">Fecha requerida de ingreso</label>
+          <input class="line" id="fechaIngreso" type="date" style="max-width:240px">
+        </div>
+
+        <div class="q" data-key="prioridad" data-req>
+          <div class="label">Prioridad</div>
+          <div class="chips" data-chips="radio" data-name="prioridad"></div>
+        </div>
+
+        <div class="q" data-key="tipo" data-req>
+          <div class="label">Tipo de requisición</div>
+          <div class="chips" data-chips="radio" data-name="tipo"></div>
+        </div>
+
+        <div class="q" data-key="justificacion" data-req>
+          <label for="justificacion">Justificación de la vacante</label>
+          <textarea class="box" id="justificacion" rows="3" placeholder="¿Por qué se necesita esta posición?"></textarea>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">03 · Perfil</div>
+        <h2>¿A quién buscamos?</h2>
+
+        <div class="q" data-key="escolaridad" data-req>
+          <div class="label">Escolaridad requerida</div>
+          <p class="hint">Puedes elegir más de una.</p>
+          <div class="chips" data-chips="checkbox" data-name="escolaridad"></div>
+        </div>
+
+        <div class="q" data-key="genero" data-req>
+          <div class="label">Personal requerido para el área</div>
+          <div class="chips" data-chips="radio" data-name="genero"></div>
+        </div>
+
+        <div class="q" data-key="experiencia" data-req>
+          <label for="experiencia">Experiencia requerida</label>
+          <input class="line" id="experiencia" placeholder="Ej. 1 año en atención a clientes">
+        </div>
+
+        <div class="q" data-key="certificaciones" data-req>
+          <label for="certificaciones">Certificaciones requeridas</label>
+          <textarea class="box" id="certificaciones" rows="2" placeholder="Si no aplica, escribe “Ninguna”"></textarea>
+        </div>
+
+        <div class="q" data-key="competencias" data-req>
+          <div class="label">Competencias clave</div>
+          <p class="hint">Puedes elegir más de una.</p>
+          <div class="chips" data-chips="checkbox" data-name="competencias"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">04 · Condiciones</div>
+        <h2>Horario y compensación</h2>
+
+        <div class="q" data-key="carga" data-req>
+          <div class="label">Condiciones laborales</div>
+          <div class="chips" data-chips="radio" data-name="carga"></div>
+        </div>
+
+        <div class="q" data-key="horario" data-req>
+          <label for="horario">Horario</label>
+          <p class="hint">Especifica el horario con detalle y sin abreviaturas.</p>
+          <textarea class="box" id="horario" rows="3" placeholder="Ej. Lunes a viernes de 6:00 a 14:00 horas"></textarea>
+        </div>
+
+        <div class="q" data-key="descanso" data-req>
+          <label for="descanso">Descanso</label>
+          <input class="line" id="descanso" placeholder="Ej. Sábado y domingo">
+        </div>
+
+        <div class="q" data-key="sueldo" data-req>
+          <label for="sueldo">Sueldo mensual</label>
+          <div class="money"><b>$</b><input class="line" id="sueldo" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        </div>
+
+        <div class="q" data-key="bono" data-req>
+          <label for="bono">Bono</label>
+          <input class="line" id="bono" placeholder="Si no aplica, escribe “No aplica”">
+        </div>
+
+        <div class="q" data-key="prestaciones" data-req>
+          <label for="prestaciones">Prestaciones adicionales</label>
+          <textarea class="box" id="prestaciones" rows="2" placeholder="Si no aplica, escribe “Ninguna”"></textarea>
+        </div>
+
+        <div class="q" data-key="funciones" data-req>
+          <label for="funciones">Funciones principales</label>
+          <textarea class="box" id="funciones" rows="4" placeholder="Describe las responsabilidades del puesto"></textarea>
+        </div>
+
+        <div class="q" data-key="autorizacion">
+          <label for="autorizacion">Autorización <span class="opt">· opcional</span></label>
+          <input class="line" id="autorizacion" placeholder="Nombre de quien autoriza la requisición">
+        </div>
+      </section>
+
+      <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    </form>
+  </div>
+
+  <div class="done hidden" id="done">
+    <div class="tick">✓</div>
+    <h1>Requisición enviada</h1>
+    <p class="lead">Recibimos tu solicitud. El equipo de Atracción y Selección del Talento la revisará y dará seguimiento.</p>
+    <button type="button" id="again">Enviar otra requisición</button>
+  </div>
+</main>
+
+<div class="bar" id="bar"><div>
+  <span class="status" id="status">0 de 20 respondidas</span>
+  <button type="submit" form="f" id="send">Enviar requisición →</button>
+</div></div>
+
+<script>
+const SUPABASE_URL='https://yokkzougxmpxpvluqgvh.supabase.co';
+const SUPABASE_KEY='sb_publishable_yihHbDZfO6550plzzvaWVQ_bCWfV4-q';
+const H={'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
+const $=id=>document.getElementById(id);
+
+const OPTIONS={
+  sucursal:['Naciones Unidas','Valle Real','Gourmetería','Estancia'],
+  area:['Recepción','Comercial','Mantenimiento','Orden y Limpieza','Coaches','Nutrición','Concierge','Kids','Dirección','Capital Humano','Sistemas'],
+  plazas:['1','2','3','4','5'],
+  prioridad:['Alta','Media','Baja'],
+  tipo:['Reemplazo','Nueva posición','Incremento de plantilla','Temporal','Proyecto especial'],
+  escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Licenciatura','Maestría'],
+  genero:['Masculino','Femenino','Indistinto'],
+  competencias:['Servicio al cliente','Liderazgo','Organización','Comunicación','Trabajo en equipo','Ventas','Análisis','Planeación'],
+  carga:['24 horas','27 horas','40 horas','48 horas']
+};
+
+// --- construir chips ---
+document.querySelectorAll('[data-chips]').forEach(box=>{
+  const name=box.dataset.name, type=box.dataset.chips;
+  box.innerHTML=OPTIONS[name].map((v,i)=>{
+    const id=`${name}_${i}`;
+    return `<label><input type="${type}" name="${name}" value="${v}" id="${id}"><span>${v}</span></label>`;
+  }).join('');
+});
+
+// --- lectura de valores ---
+const val=key=>{
+  const chips=document.querySelectorAll(`input[name="${key}"]`);
+  if(chips.length) return [...chips].filter(c=>c.checked).map(c=>c.value);
+  const el=$(key); return el?[el.value.trim()].filter(Boolean):[];
+};
+const requiredKeys=[...document.querySelectorAll('.q[data-req]')].map(q=>q.dataset.key);
+$('status').textContent=`0 de ${requiredKeys.length} respondidas`;
+
+function updateProgress(){
+  const done=requiredKeys.filter(k=>val(k).length).length;
+  $('prog').style.width=(done/requiredKeys.length*100)+'%';
+  const st=$('status'); st.classList.remove('bad');
+  st.textContent=`${done} de ${requiredKeys.length} respondidas`;
+}
+document.getElementById('f').addEventListener('input',e=>{ e.target.closest('.q')?.classList.remove('err'); updateProgress(); });
+document.getElementById('f').addEventListener('change',e=>{ e.target.closest('.q')?.classList.remove('err'); updateProgress(); });
+
+// --- sugerencias de puesto y sucursal → unidad, tomadas de las vacantes existentes ---
+let known=[];
+(async()=>{
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026?select=vacante,unidad_negocio,sucursal`,{headers:H});
+    if(!res.ok) return;
+    known=await res.json();
+    const puestos=[...new Set(known.map(r=>r.vacante).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+    $('puestos').innerHTML=puestos.map(p=>{const o=document.createElement('option');o.value=p;return o.outerHTML}).join('');
+  }catch(e){}
+})();
+const norm=s=>(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+function unidadDe(sucursal){
+  const counts={};
+  known.filter(r=>norm(r.sucursal)===norm(sucursal)&&r.unidad_negocio).forEach(r=>counts[r.unidad_negocio]=(counts[r.unidad_negocio]||0)+1);
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
+}
+
+// --- envío ---
+$('f').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if($('website').value) return; // honeypot anti-bots
+  const missing=requiredKeys.filter(k=>!val(k).length);
+  document.querySelectorAll('.q.err').forEach(q=>q.classList.remove('err'));
+  if(missing.length){
+    missing.forEach(k=>document.querySelector(`.q[data-key="${k}"]`).classList.add('err'));
+    document.querySelector(`.q[data-key="${missing[0]}"]`).scrollIntoView({behavior:'smooth',block:'center'});
+    const st=$('status'); st.textContent=`Faltan ${missing.length} campo(s) obligatorio(s)`; st.classList.add('bad');
+    return;
+  }
+  const one=k=>val(k)[0]||null;
+  const sueldo=parseFloat($('sueldo').value);
+  const tipo=one('tipo');
+  const body={
+    solicitante_datos:$('solicitante').value.trim(),
+    vacante:$('puesto').value.trim(),
+    sucursal:one('sucursal'),
+    unidad_negocio:unidadDe(one('sucursal')),
+    area:one('area'),
+    numero_plazas:parseInt(one('plazas'),10),
+    fecha_requerida_ingreso:$('fechaIngreso').value,
+    prioridad:one('prioridad'),
+    tipo_requisicion:tipo,
+    motivo_vacante:tipo==='Reemplazo'?'Reemplazo':'Nueva creación',
+    justificacion:$('justificacion').value.trim(),
+    escolaridad:val('escolaridad').join(', '),
+    personal_requerido:one('genero'),
+    experiencia:$('experiencia').value.trim(),
+    certificaciones:$('certificaciones').value.trim(),
+    competencias:val('competencias').join(', '),
+    carga_horaria:parseFloat(one('carga')),
+    horario:$('horario').value.trim(),
+    descanso:$('descanso').value.trim(),
+    sueldo_100:isNaN(sueldo)?null:sueldo,
+    bono:$('bono').value.trim(),
+    prestaciones:$('prestaciones').value.trim(),
+    funciones:$('funciones').value.trim(),
+    autorizacion:$('autorizacion').value.trim()||null,
+    fecha_solicitud:new Date().toLocaleDateString('en-CA'),
+    estatus:'POR ASIGNAR'
+  };
+  const btn=$('send'), st=$('status'); btn.disabled=true; st.classList.remove('bad'); st.textContent='Enviando…';
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026`,{
+      method:'POST',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error(await res.text());
+    $('formWrap').classList.add('hidden'); $('bar').classList.add('hidden'); $('done').classList.remove('hidden');
+    $('prog').style.width='100%';
+    window.scrollTo({top:0});
+  }catch(err){
+    console.error(err);
+    st.classList.add('bad'); st.textContent='No se pudo enviar. Inténtalo de nuevo.';
+  }finally{ btn.disabled=false; }
+});
+
+$('again').onclick=()=>{
+  $('f').reset(); updateProgress();
+  $('done').classList.add('hidden'); $('formWrap').classList.remove('hidden'); $('bar').classList.remove('hidden');
+  window.scrollTo({top:0});
+};
+</script>
+</body>
+</html>
