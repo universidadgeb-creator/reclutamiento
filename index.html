@@ -921,7 +921,8 @@ function solicitudRowsHtml(){
       <td>${esc(r.area)}</td>
       <td style="min-width:170px">${admin
         ?`<select class="form-control" data-sol-rec="${r.id}"><option value="">Selecciona reclutador…</option>${recs.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>
-          <button class="btn primary" data-sol-assign="${r.id}" style="margin-top:6px;width:100%;padding:7px 10px;font-size:11px">Asignar reclutador</button>`
+          <select class="form-control" data-sol-prio="${r.id}" style="margin-top:6px"><option value="">Prioridad…</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+          <button class="btn primary" data-sol-assign="${r.id}" style="margin-top:6px;width:100%;padding:7px 10px;font-size:11px">Asignar</button>`
         :'<span class="small">Sin asignar</span>'}</td>
       <td>${esc(r.motivo)}</td>
       <td>${esc(r.turno||'—')}</td>
@@ -971,10 +972,12 @@ async function assignSolicitud(id){
   const sol=solicitudes.rows.find(x=>x.id===String(id));
   if(!sol) return;
   const reclutador=(document.querySelector(`[data-sol-rec="${id}"]`)?.value||'').trim();
+  const prioridad=(document.querySelector(`[data-sol-prio="${id}"]`)?.value||'').trim();
   if(!reclutador){ alert('Selecciona un reclutador antes de asignar.'); return; }
-  if(!confirm(`Asignar "${sol.vacante}" (${sol.sucursal}) a ${reclutador}? La vacante pasará a ACTIVA.`)) return;
+  if(!prioridad){ alert('Selecciona la prioridad antes de asignar.'); return; }
+  if(!confirm(`Asignar "${sol.vacante}" (${sol.sucursal}) a ${reclutador} con prioridad ${prioridad}? La vacante pasará a ACTIVA.`)) return;
   try{
-    await dbUpdateVacancy(id,{reclutador:normalizeRecruiterName(reclutador),estatus:'ACTIVA'});
+    await dbUpdateVacancy(id,{reclutador:normalizeRecruiterName(reclutador),prioridad,estatus:'ACTIVA'});
     await loadVacancies();
   }catch(err){ console.error(err); alert('No se pudo asignar el reclutador en Supabase.'); }
 }

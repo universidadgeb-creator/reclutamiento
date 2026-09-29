@@ -9,73 +9,71 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0E100C;--panel:#161912;--ink:#F4F5EF;--muted:#9A9E90;--line:#2B2F25;
-  --lime:#C8F76B;--lime-ink:#1B2308;--red:#FF7A6B;
+  --bg:#E4E5E9;--card:#FFFFFF;--ink:#0F1115;--muted:#858892;--line:#E6E7EC;
+  --lime:#C4F76A;--lime-ink:#0F1115;--accent:#4F7F0B;--red:#D93B3B;--edge:#CDCEDB;
   --display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+body{margin:0;background:linear-gradient(180deg,#ECEDF0,#DCDDE2) fixed;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
 
-.progress{position:fixed;top:0;left:0;right:0;height:3px;background:var(--line);z-index:20}
+.progress{position:fixed;top:0;left:0;right:0;height:4px;background:#D3D4DA;z-index:20}
 .progress i{display:block;height:100%;width:0;background:var(--lime);transition:width .25s}
 
-main{max-width:720px;margin:0 auto;padding:72px 22px 150px}
+main{max-width:760px;margin:36px auto 130px;padding:52px 48px 56px;background:var(--card);border:1px solid #D2D3DB;border-radius:32px;box-shadow:0 20px 50px rgba(30,35,50,.08)}
 .brand{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,52px);line-height:1.02;letter-spacing:-.02em;margin:14px 0 14px}
-.lead{color:var(--muted);max-width:580px;margin:0 0 14px}
-.note{border-left:2px solid var(--lime);padding:2px 0 2px 14px;color:var(--muted);font-size:14px;margin:22px 0 0;max-width:580px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(32px,6vw,44px);line-height:1.04;letter-spacing:-.02em;margin:12px 0 12px}
+.lead{color:#5D606B;max-width:600px;margin:0 0 12px}
+.note{border-left:3px solid var(--lime);padding:2px 0 2px 14px;color:var(--muted);font-size:14px;margin:22px 0 0;max-width:600px}
 .note b{color:var(--ink)}
 
-section{margin-top:64px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);display:flex;align-items:center;gap:8px}
-.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--lime)}
-h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);letter-spacing:-.015em;line-height:1.1;margin:10px 0 0}
+section{margin-top:56px;padding-top:40px;border-top:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px}
+.eyebrow:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 1px #A9DB4E}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,4.5vw,32px);letter-spacing:-.015em;line-height:1.1;margin:10px 0 0}
 
-.q{margin-top:34px}
-.q>label,.q>.label{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
+.q{margin-top:30px}
+.q>label,.q>.label{display:block;font-weight:600;font-size:14px;margin-bottom:4px}
 .q .hint{color:var(--muted);font-size:13px;margin:0 0 10px}
 .opt{color:var(--muted);font-weight:400;font-size:13px}
 .q.err>label,.q.err>.label{color:var(--red)}
 .q.err .line,.q.err .box{border-color:var(--red)}
 
-.line,.box{width:100%;background:transparent;color:var(--ink);font:inherit;border:0;border-bottom:1px solid #3A3F32;padding:10px 2px;border-radius:0;transition:border-color .15s}
-.box{border:1px solid #3A3F32;border-radius:12px;padding:12px 14px;resize:vertical;min-height:96px}
-.line:focus,.box:focus{outline:0;border-color:var(--lime)}
-.line::placeholder,.box::placeholder{color:#5F6455}
-input[type=date]{color-scheme:dark}
+.line,.box{width:100%;background:#FAFAFC;color:var(--ink);font:inherit;font-size:15px;border:1px solid var(--edge);border-radius:14px;padding:13px 16px;transition:border-color .15s,box-shadow .15s}
+.box{resize:vertical;min-height:96px}
+.line:focus,.box:focus{outline:0;border-color:#8FCB2E;box-shadow:0 0 0 3px rgba(196,247,106,.45);background:#fff}
+.line::placeholder,.box::placeholder{color:#A3A6B0}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button{display:none}
 
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .chips label{position:relative;cursor:pointer}
 .chips input{position:absolute;opacity:0;pointer-events:none}
-.chips span{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid #3A3F32;border-radius:999px;font-size:14px;font-weight:500;color:var(--ink);transition:all .12s;user-select:none}
-.chips label:hover span{border-color:#6A705C}
-.chips input:checked+span{background:var(--lime);border-color:var(--lime);color:var(--lime-ink);font-weight:600}
-.chips input:checked+span:before{content:"✓";font-weight:800}
-.chips input:focus-visible+span{outline:2px solid var(--lime);outline-offset:2px}
+.chips span{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1px solid var(--edge);border-radius:999px;font-size:14px;font-weight:500;background:#fff;transition:all .12s;user-select:none}
+.chips label:hover span{border-color:#9A9DB5}
+.chips input:checked+span{background:#F3F3F8;border-color:#B5B8D0;padding-left:8px;font-weight:600}
+.chips input:checked+span:before{content:"✓";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--lime);font-size:12px;font-weight:800}
+.chips input:focus-visible+span{outline:2px solid #8FCB2E;outline-offset:2px}
 .q.err .chips span{border-color:var(--red)}
 
-.money{display:flex;align-items:center;gap:6px}
+.money{display:flex;align-items:center;gap:8px}
 .money b{color:var(--muted);font-weight:500}
 
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(transparent,var(--bg) 35%);padding:38px 22px 18px}
-.bar div{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.status{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.status.bad{color:var(--red)}
-button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:14px 30px;background:var(--lime);color:var(--lime-ink);cursor:pointer;transition:transform .1s,opacity .15s}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(rgba(220,221,226,0),#DCDDE2 40%);padding:36px 22px 18px}
+.bar div{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.status{font-family:var(--mono);font-size:12px;color:#5D606B}
+.status.bad{color:var(--red);font-weight:500}
+button{font:inherit;font-weight:700;border:0;border-radius:16px;padding:14px 30px;background:var(--lime);color:var(--lime-ink);cursor:pointer;transition:transform .1s,opacity .15s,box-shadow .15s;box-shadow:0 6px 16px rgba(120,170,20,.25)}
 button:hover{transform:translateY(-1px)}
 button:disabled{opacity:.5;cursor:default;transform:none}
-button.ghost{background:#23271D;color:var(--ink)}
 
-.done{text-align:center;padding:90px 0}
+.done{text-align:center;padding:70px 0}
 .done .tick{width:72px;height:72px;border-radius:50%;background:var(--lime);color:var(--lime-ink);font-size:36px;font-weight:800;display:grid;place-items:center;margin:0 auto 26px}
 .done .lead{margin:0 auto 28px}
 .hp{position:absolute;left:-9999px}
 .hidden{display:none!important}
-@media(max-width:560px){main{padding-top:54px}.status{display:none}.bar div{justify-content:center}}
+@media(max-width:600px){main{margin:0;border-radius:0;border:0;padding:40px 20px 50px;box-shadow:none}.status{display:none}.bar div{justify-content:center}}
 </style>
 </head>
 <body>
@@ -85,23 +83,35 @@ button.ghost{background:#23271D;color:var(--ink)}
   <div id="formWrap">
     <div class="brand">GEB · Atracción y Selección del Talento</div>
     <h1>Requisición de talento</h1>
-    <p class="lead">Reúne la información necesaria para iniciar un proceso de reclutamiento de forma eficiente y oportuna. Ten a la mano el perfil, horario, condiciones y justificación del puesto.</p>
-    <p class="note"><b>Solicitudes incompletas</b> pueden ser devueltas para su corrección. La <b>fecha de ingreso solicitada no garantiza</b> la cobertura en ese plazo: depende de la complejidad del perfil, la disponibilidad de candidatos y el proceso de selección.</p>
+    <p class="lead">Este formulario tiene como objetivo recopilar toda la información necesaria para iniciar un proceso de reclutamiento de manera eficiente y oportuna.</p>
+    <p class="lead">Antes de enviar la requisición, asegúrate de contar con la información completa del puesto, perfil requerido, horario, condiciones laborales y justificación de la vacante.</p>
+    <p class="lead">Las solicitudes incompletas o con información insuficiente podrán ser devueltas para su corrección.</p>
+    <p class="lead">Una vez enviada la requisición, el equipo Atracción y Selección del Talento revisará la información y dará seguimiento al proceso correspondiente.</p>
+    <p class="note"><b>Importante:</b> La fecha de ingreso solicitada no garantiza la cobertura de la vacante en ese plazo. El tiempo de cobertura dependerá de la complejidad del perfil, disponibilidad de candidatos y cumplimiento del proceso de selección.</p>
 
     <form id="f" novalidate autocomplete="off">
 
       <section>
-        <div class="eyebrow">01 · Solicitante</div>
-        <h2>¿Quién solicita y para dónde?</h2>
+        <div class="eyebrow">01 · Requisición</div>
+        <h2>Detalles de la requisición</h2>
 
-        <div class="q" data-key="solicitante" data-req>
-          <label for="solicitante">Datos generales del solicitante</label>
-          <p class="hint">Nombre completo, puesto y un medio de contacto.</p>
-          <textarea class="box" id="solicitante" rows="2" placeholder="Ej. Ana Pérez · Gerente de sucursal · ana@empresa.com"></textarea>
+        <div class="q" data-key="solNombre" data-req>
+          <label for="solNombre">Nombre completo</label>
+          <input class="line" id="solNombre" autocomplete="name" placeholder="Nombre de quien solicita">
+        </div>
+
+        <div class="q" data-key="solPuesto" data-req>
+          <label for="solPuesto">Puesto</label>
+          <input class="line" id="solPuesto" placeholder="Tu puesto actual">
+        </div>
+
+        <div class="q" data-key="solContacto" data-req>
+          <label for="solContacto">Medio de contacto</label>
+          <input class="line" id="solContacto" placeholder="Correo, teléfono o extensión">
         </div>
 
         <div class="q" data-key="puesto" data-req>
-          <label for="puesto">Puesto solicitado</label>
+          <label for="puesto">Puesto solicitado (vacante)</label>
           <input class="line" id="puesto" list="puestos" placeholder="Ej. Recepcionista">
           <datalist id="puestos"></datalist>
         </div>
@@ -115,11 +125,6 @@ button.ghost{background:#23271D;color:var(--ink)}
           <div class="label">Área</div>
           <div class="chips" data-chips="radio" data-name="area"></div>
         </div>
-      </section>
-
-      <section>
-        <div class="eyebrow">02 · Vacante</div>
-        <h2>Detalles de la requisición</h2>
 
         <div class="q" data-key="plazas" data-req>
           <div class="label">Número de vacantes</div>
@@ -129,11 +134,6 @@ button.ghost{background:#23271D;color:var(--ink)}
         <div class="q" data-key="fechaIngreso" data-req>
           <label for="fechaIngreso">Fecha requerida de ingreso</label>
           <input class="line" id="fechaIngreso" type="date" style="max-width:240px">
-        </div>
-
-        <div class="q" data-key="prioridad" data-req>
-          <div class="label">Prioridad</div>
-          <div class="chips" data-chips="radio" data-name="prioridad"></div>
         </div>
 
         <div class="q" data-key="tipo" data-req>
@@ -148,7 +148,7 @@ button.ghost{background:#23271D;color:var(--ink)}
       </section>
 
       <section>
-        <div class="eyebrow">03 · Perfil</div>
+        <div class="eyebrow">02 · Perfil</div>
         <h2>¿A quién buscamos?</h2>
 
         <div class="q" data-key="escolaridad" data-req>
@@ -180,7 +180,7 @@ button.ghost{background:#23271D;color:var(--ink)}
       </section>
 
       <section>
-        <div class="eyebrow">04 · Condiciones</div>
+        <div class="eyebrow">03 · Condiciones</div>
         <h2>Horario y compensación</h2>
 
         <div class="q" data-key="carga" data-req>
@@ -252,7 +252,6 @@ const OPTIONS={
   sucursal:['Naciones Unidas','Valle Real','Gourmetería','Estancia'],
   area:['Recepción','Comercial','Mantenimiento','Orden y Limpieza','Coaches','Nutrición','Concierge','Kids','Dirección','Capital Humano','Sistemas'],
   plazas:['1','2','3','4','5'],
-  prioridad:['Alta','Media','Baja'],
   tipo:['Reemplazo','Nueva posición','Incremento de plantilla','Temporal','Proyecto especial'],
   escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Licenciatura','Maestría'],
   genero:['Masculino','Femenino','Indistinto'],
@@ -321,14 +320,13 @@ $('f').addEventListener('submit',async e=>{
   const sueldo=parseFloat($('sueldo').value);
   const tipo=one('tipo');
   const body={
-    solicitante_datos:$('solicitante').value.trim(),
+    solicitante_datos:[$('solNombre').value,$('solPuesto').value,$('solContacto').value].map(x=>x.trim()).join(' · '),
     vacante:$('puesto').value.trim(),
     sucursal:one('sucursal'),
     unidad_negocio:unidadDe(one('sucursal')),
     area:one('area'),
     numero_plazas:parseInt(one('plazas'),10),
     fecha_requerida_ingreso:$('fechaIngreso').value,
-    prioridad:one('prioridad'),
     tipo_requisicion:tipo,
     motivo_vacante:tipo==='Reemplazo'?'Reemplazo':'Nueva creación',
     justificacion:$('justificacion').value.trim(),
