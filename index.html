@@ -150,6 +150,7 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
 .base-vac-status.red{background:#F9DEDC;color:#B42318}
 .base-vac-status.yellow{background:#FCEFC7;color:#A15C00}
 .base-vac-status.black{background:#1F2937;color:#FFFFFF}
+.base-vac-status.blue{background:#E3ECFF;color:#2855A6}
 .row-actions{display:flex;gap:6px;align-items:center}
 .row-action-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .row-action-btn.edit{background:#E8F0FE;color:#2457C5;border-color:#C8D9FF}
@@ -301,7 +302,7 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
         <div class="small" id="vacCount"></div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-        <div class="filter" style="min-width:190px"><label>Estatus de vacante</label><select id="vacStatusFilter"><option value="">Activas y cubiertas</option><option value="ACTIVA">Solo activas</option><option value="CUBIERTA">Solo cubiertas</option></select></div>
+        <div class="filter" style="min-width:190px"><label>Estatus de vacante</label><select id="vacStatusFilter"><option value="">Activas y cubiertas</option><option value="ACTIVA">Solo activas</option><option value="CUBIERTA">Solo cubiertas</option><option value="EN PAUSA">Solo en pausa</option></select></div>
         <div class="filter" style="min-width:190px"><label>Días de reclutamiento</label><select id="vacDaysFilter"><option value="">Todos</option><option value="RISK">30 a 44 días</option><option value="OVER45">45 días o más</option><option value="UNDER30">Menos de 30 días</option></select></div>
       </div>
       <div class="table-wrap" style="max-height:650px"><table id="vacTable"></table></div>
@@ -397,15 +398,21 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
   <div class="modal-card">
     <div class="modal-head">
       <div>
-        <div class="small">CONTRATACIÓN SIN REQUISICIÓN</div>
-        <h3>Agregar contratación</h3>
-        <div class="small">Este ingreso contará en Contrataciones y Efectividad, pero no en indicadores de Vacantes ni tiempo de cobertura.</div>
+        <div class="small" id="hireModalKicker">CONTRATACIÓN</div>
+        <h3 id="hireModalTitle">Agregar contratación</h3>
+        <div class="small">Puedes vincular una vacante o registrar el ingreso como SIN REQUISICIÓN. Vincularlo no cambia automáticamente el estatus de la vacante.</div>
       </div>
       <button class="close" id="closeHireModal">×</button>
     </div>
     <form id="newHireForm">
       <div class="modal-body">
         <div class="form-grid">
+          <div class="form-group full">
+            <label>Vacante vinculada</label>
+            <select class="form-control" id="nhVacanteLink">
+              <option value="">SIN REQUISICIÓN</option>
+            </select>
+          </div>
           <div class="form-group full"><label>Nombre completo <span class="req">*</span></label><input class="form-control" id="nhNombre" type="text" required></div>
           <div class="form-group"><label>Rol / puesto <span class="req">*</span></label><select class="form-control" id="nhRol" required></select></div>
           <div class="form-group"><label>Unidad de negocio <span class="req">*</span></label><select class="form-control" id="nhUnidad" required></select></div>
@@ -414,11 +421,30 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
           <div class="form-group"><label>Reclutador</label><select class="form-control" id="nhReclutador"></select></div>
           <div class="form-group"><label>Fecha de ingreso <span class="req">*</span></label><input class="form-control" id="nhFechaIngreso" type="date" required></div>
           <div class="form-group"><label>Fecha de baja</label><input class="form-control" id="nhFechaBaja" type="date"></div>
+          <div class="form-group">
+            <label>Fuente de reclutamiento <span class="req" id="nhFuenteReq">*</span></label>
+            <select class="form-control" id="nhFuente">
+              <option value="">Selecciona una fuente</option>
+              <option>INDEED</option>
+              <option>COMPUTRABAJO</option>
+              <option>LINKEDIN</option>
+              <option>FACEBOOK</option>
+              <option>INSTAGRAM</option>
+              <option>REFERIDO</option>
+              <option>FERIA DE EMPLEO</option>
+              <option>UNIVERSIDAD</option>
+              <option>BOLSA DE TRABAJO</option>
+              <option>REINGRESO</option>
+              <option>OTRO</option>
+            </select>
+            <div class="small">Obligatoria para ingresos desde septiembre 2026.</div>
+          </div>
+          <div class="form-group"><label>Motivo de baja</label><input class="form-control" id="nhMotivoBaja" type="text" placeholder="Ej. Renuncia, término de contrato..."></div>
           <div class="form-group full"><label>URL fotografía</label><input class="form-control" id="nhFoto" type="url" placeholder="https://..."></div>
           <div class="form-group full"><label>Comentarios</label><textarea class="form-control" id="nhComentarios" rows="2" placeholder="Comentario opcional"></textarea></div>
         </div>
         <div class="form-actions">
-          <div class="form-note">Origen: <b>SIN REQUISICIÓN</b></div>
+          <div class="form-note" id="hireOriginNote">Origen: <b>SIN REQUISICIÓN</b></div>
           <div style="display:flex;gap:8px"><button type="button" class="btn secondary" id="cancelHireModal">Cancelar</button><button type="submit" class="btn primary">Guardar contratación</button></div>
         </div>
       </div>
@@ -480,6 +506,17 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
           </div>
 
           <div class="form-group">
+            <label>Turno</label>
+            <select class="form-control" id="nvTurno">
+              <option value="">Selecciona un turno</option>
+              <option value="MATUTINO">MATUTINO</option>
+              <option value="VESPERTINO">VESPERTINO</option>
+              <option value="MIXTO">MIXTO</option>
+              <option value="NO APLICA">NO APLICA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Fecha de solicitud <span class="req">*</span></label>
             <input class="form-control" id="nvSolicitud" type="date" required>
           </div>
@@ -489,8 +526,20 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
             <select class="form-control" id="nvEstatus" required>
               <option value="ACTIVA">ACTIVA</option>
               <option value="CUBIERTA">CUBIERTA</option>
+              <option value="EN PAUSA">EN PAUSA</option>
               <option value="CANCELADA">CANCELADA</option>
             </select>
+          </div>
+
+          <div class="form-group" id="nvPausaFechaGroup" style="display:none">
+            <label>Fecha de pausa <span class="req">*</span></label>
+            <input class="form-control" id="nvPausaFecha" type="date">
+          </div>
+
+          <div class="form-group" id="nvReactivacionFechaGroup" style="display:none">
+            <label>Fecha de reactivación <span class="req">*</span></label>
+            <input class="form-control" id="nvReactivacionFecha" type="date">
+            <div class="small">Se utiliza para descontar del SLA los días que la vacante estuvo en pausa.</div>
           </div>
 
           <div class="form-group" id="nvIngresoFechaGroup" style="display:none">
@@ -557,6 +606,7 @@ let accessToken = sessionStorage.getItem('gebSupabaseAccessToken') || '';
 let effChartFilter='';
 let baseVacStatusFilter='';
 let editingVacancyId='';
+let editingHireId='';
 
 const TODAY = new Date('2026-09-15T12:00:00');
 const COLORS = {
@@ -625,6 +675,7 @@ function mapDbRow(r){
     plazas:Number(r.numero_plazas||1),
     motivo:r.motivo_vacante||'',
     horario:r.horario||'',
+    turno:(r.turno||'').toUpperCase(),
     comentarios:r.comentarios||'',
     sueldo:Number(r.sueldo_100||0),
     carga:Number(r.carga_horaria||0),
@@ -633,6 +684,9 @@ function mapDbRow(r){
     estatus:(r.estatus||'').toUpperCase(),
     ingresoFecha:r.fecha_ingreso_real||'',
     cancelacionFecha:r.fecha_cancelacion||'',
+    pausaFecha:r.fecha_pausa||'',
+    reactivacionFecha:r.fecha_reactivacion||'',
+    diasPausaAcumulados:Number(r.dias_pausa_acumulados||0),
     ingreso:r.nombre_ingreso||'',
     bajaFecha:r.fecha_baja||'',
     foto:r.foto_url||''
@@ -652,6 +706,8 @@ function mapHireRow(r){
     reclutador:normalizeRecruiterName(r.reclutador),
     ingresoFecha:r.fecha_ingreso||'',
     bajaFecha:r.fecha_baja||'',
+    motivoBaja:r.motivo_baja||'',
+    fuente:r.fuente_reclutamiento||'',
     foto:r.foto_url||'',
     origen:r.origen||'',
     comentarios:r.comentarios||''
@@ -669,6 +725,8 @@ function hireToDb(r){
     reclutador:normalizeRecruiterName(r.reclutador)||null,
     fecha_ingreso:r.ingresoFecha,
     fecha_baja:r.bajaFecha||null,
+    motivo_baja:r.motivoBaja||null,
+    fuente_reclutamiento:r.fuente||null,
     foto_url:r.foto||null,
     origen:r.origen||'CON VACANTE',
     comentarios:r.comentarios||null
@@ -686,6 +744,7 @@ function vacancyToDb(r){
     numero_plazas:r.plazas,
     motivo_vacante:r.motivo,
     horario:r.horario||null,
+    turno:r.turno||null,
     comentarios:r.comentarios||null,
     sueldo_100:r.sueldo||null,
     carga_horaria:r.carga||null,
@@ -694,6 +753,9 @@ function vacancyToDb(r){
     estatus:r.estatus,
     fecha_ingreso_real:r.ingresoFecha||null,
     fecha_cancelacion:r.cancelacionFecha||null,
+    fecha_pausa:r.pausaFecha||null,
+    fecha_reactivacion:r.reactivacionFecha||null,
+    dias_pausa_acumulados:Number(r.diasPausaAcumulados||0),
     nombre_ingreso:r.ingreso||null,
     fecha_baja:r.bajaFecha||null,
     foto_url:r.foto||null
@@ -760,19 +822,11 @@ function updateAdminUi(){
   const hireBtn=document.getElementById('newHireBtn');
   if(hireBtn) hireBtn.style.display=logged?'inline-block':'none';
 
+  // Base de datos siempre visible; acciones de edición solo para Admin.
   const baseTab=document.getElementById('baseTabBtn');
-  if(baseTab) baseTab.style.display=logged?'inline-block':'none';
+  if(baseTab) baseTab.style.display='inline-block';
 
-  // Si se cierra sesión estando en Base de datos, regresar a Resumen.
-  if(!logged && document.querySelector('.tab.active')?.dataset.tab==='base'){
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelector('.tab[data-tab="resumen"]')?.classList.add('active');
-    ['resumen','vacantes','efectividad','base'].forEach(x=>{
-      document.getElementById('tab-'+x)?.classList.toggle('hidden',x!=='resumen');
-    });
-  }
-
-  document.querySelectorAll('[data-edit-vacancy],[data-delete-vacancy]')
+  document.querySelectorAll('[data-edit-vacancy],[data-delete-vacancy],[data-edit-hire],[data-base-add-hire]')
     .forEach(el=>el.style.display=logged?'inline-block':'none');
 }
 
@@ -802,6 +856,16 @@ async function dbInsertHire(record){
     method:'POST',
     headers:{...supabaseHeaders(true),'Prefer':'return=representation'},
     body:JSON.stringify(hireToDb(record))
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return (await res.json())[0];
+}
+
+async function dbUpdateHire(id,patch){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/contrataciones_2026?id=eq.${encodeURIComponent(id)}`,{
+    method:'PATCH',
+    headers:{...supabaseHeaders(true),'Prefer':'return=representation'},
+    body:JSON.stringify(patch)
   });
   if(!res.ok) throw new Error(await res.text());
   return (await res.json())[0];
@@ -837,10 +901,30 @@ function tenureStatus(r){
 function isFormalVacancy(r){
   return !!(r.solicitud && String(r.solicitud).trim());
 }
+function todayISO(){
+  const n=new Date();
+  const y=n.getFullYear(), m=String(n.getMonth()+1).padStart(2,'0'), d0=String(n.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d0}`;
+}
+function pauseAdjustedDays(r,endISO){
+  if(!r.solicitud || !endISO) return null;
+  let end=d(endISO), start=d(r.solicitud);
+  if(!start||!end) return null;
+
+  const pause=d(r.pausaFecha);
+  const react=d(r.reactivacionFecha);
+
+  // Si el corte cae dentro de la pausa actual/última, el reloj se congela en la fecha de pausa.
+  if(pause && pause<=end && (!react || react>end)) end=pause;
+
+  const base=Math.max(0,Math.round((end-start)/86400000));
+  const paused=Math.max(0,Number(r.diasPausaAcumulados||0));
+  return Math.max(0,base-paused);
+}
 function currentCoverageDays(r){
   if(!r.solicitud) return null;
-  if(r.estatus==='CUBIERTA' && r.ingresoFecha) return days(r.solicitud,r.ingresoFecha);
-  if(r.estatus==='ACTIVA') return days(r.solicitud,'2026-09-11');
+  if(r.estatus==='CUBIERTA' && r.ingresoFecha) return pauseAdjustedDays(r,r.ingresoFecha);
+  if(r.estatus==='ACTIVA' || r.estatus==='EN PAUSA') return pauseAdjustedDays(r,todayISO());
   return null;
 }
 function coverageDays(r){
@@ -850,16 +934,29 @@ function coverageDays(r){
 
   const ingreso=d(r.ingresoFecha);
   if(ingreso && ingreso<=bounds.end){
-    return days(r.solicitud, r.ingresoFecha);
+    return pauseAdjustedDays(r,r.ingresoFecha);
   }
-  return days(r.solicitud, bounds.end.toISOString().slice(0,10));
+
+  const st=statusForSelectedPeriod(r);
+  if(st==='ACTIVA' || st==='EN PAUSA'){
+    return pauseAdjustedDays(r,bounds.end.toISOString().slice(0,10));
+  }
+  return null;
 }
 function statusForSelectedPeriod(r){
   const bounds=selectedMonthBounds();
   if(!bounds) return r.estatus;
-  if(r.estatus==='CANCELADA') return 'CANCELADA';
+
+  const cancel=d(r.cancelacionFecha);
+  if(cancel && cancel<=bounds.end) return 'CANCELADA';
+
   const ingreso=d(r.ingresoFecha);
   if(ingreso && ingreso<=bounds.end) return 'CUBIERTA';
+
+  const pause=d(r.pausaFecha);
+  const react=d(r.reactivacionFecha);
+  if(pause && pause<=bounds.end && (!react || react>bounds.end)) return 'EN PAUSA';
+
   return 'ACTIVA';
 }
 function slaClass(n){ if(n==null)return 'gray'; return n<30?'green':n<45?'yellow':'red'; }
@@ -879,6 +976,7 @@ function baseVacStatusMeta(r){
   const n=coverageDays(r);
   if(st==='CANCELADA') return {cls:'black',label:'CANCELADA'};
   if(st==='ACTIVA') return {cls:'yellow',label:'ACTIVA'};
+  if(st==='EN PAUSA') return {cls:'blue',label:'EN PAUSA'};
   if(st==='CUBIERTA'){
     if(n!=null && n<45) return {cls:'green',label:'CUBIERTA'};
     return {cls:'red',label:'CUBIERTA'};
@@ -941,14 +1039,7 @@ function activeVacanciesForSelectedPeriod(){
     const solicitud=d(r.solicitud);
     if(!solicitud || solicitud>bounds.end) return false;
 
-    const ingreso=d(r.ingresoFecha);
-
-    // Regla histórica v29:
-    // - Si la vacante está ACTIVA y no tiene ingreso, estaba activa al cierre del mes.
-    // - Si está CUBIERTA y no tiene fecha de ingreso, NO se asume automáticamente activa.
-    // - Si tiene fecha de ingreso posterior al fin del mes, sí estaba activa al cierre.
-    if(ingreso) return ingreso>bounds.end;
-    return r.estatus==='ACTIVA';
+    return statusForSelectedPeriod(r)==='ACTIVA';
   });
 }
 
@@ -997,7 +1088,8 @@ function totalVacanciesForSelectedPeriod(){
 
     const openedInPeriod = solicitud>=bounds.start && solicitud<=bounds.end;
     const coveredInPeriod = validIngreso && ingreso>=bounds.start && ingreso<=bounds.end;
-    const activeAtPeriodEnd = validIngreso ? ingreso>bounds.end : r.estatus==='ACTIVA';
+    const stAtEnd=statusForSelectedPeriod(r);
+    const activeAtPeriodEnd = stAtEnd==='ACTIVA' || stAtEnd==='EN PAUSA';
 
     return openedInPeriod || coveredInPeriod || activeAtPeriodEnd;
   });
@@ -1480,7 +1572,7 @@ function renderPeople(hires){
   document.getElementById('people').innerHTML=rs.length?rs.map(r=>{
     const st=tenureStatus(r), cl=st.includes('BAJA -90')?'red':st.includes('BAJA +90')?'blue':st.includes('ACTIVO +90')?'green':'yellow';
     const img=driveImg(r.foto);
-    return `<div class="card person" data-person="H${r.id}"><div class="person-photo">${img?`<img src="${img}" alt="${r.ingreso||''}" style="width:100%;height:100%;object-fit:cover;object-position:center center;transform:none;padding:0" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="avatar" style="display:none">${initials(r.ingreso)}</div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}</div><div class="person-body"><div class="person-name">${r.ingreso}</div><div class="person-meta">${r.vacante||'Ingreso sin vacante formal'}<br>${r.unidad} · ${r.sucursal}<br>Ingreso: ${fmtDate(r.ingresoFecha)}</div><div style="margin-top:8px"><span class="badge ${cl}">${st}</span></div></div></div>`;
+    return `<div class="card person" data-person="H${r.id}"><div class="person-photo">${img?`<img src="${img}" alt="${r.ingreso||''}" style="object-fit:cover;object-position:center center;transform:none;padding:0" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="avatar" style="display:none">${initials(r.ingreso)}</div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}</div><div class="person-body"><div class="person-name">${r.ingreso}</div><div class="person-meta">${r.vacante||'Ingreso sin vacante formal'}<br>${r.unidad} · ${r.sucursal}<br>Ingreso: ${fmtDate(r.ingresoFecha)}</div><div style="margin-top:8px"><span class="badge ${cl}">${st}</span></div></div></div>`;
   }).join(''):'<div class="empty">No hay contrataciones para estos filtros.</div>';
 }
 
@@ -1491,7 +1583,7 @@ function baseTable(rows, cols){
 function renderBase(type='vac'){
   const box=document.getElementById('baseContent');
   if(type==='vac'){
-    let rows=totalVacanciesForSelectedPeriod();
+    let rows=globalFiltered('solicitud');
 
     if(baseVacStatusFilter){
       rows=rows.filter(r=>statusForSelectedPeriod(r)===baseVacStatusFilter);
@@ -1507,10 +1599,12 @@ function renderBase(type='vac'){
       <button class="base-filter-btn ${baseVacStatusFilter===''?'active':''}" data-base-vac-filter="">TODAS</button>
       <button class="base-filter-btn ${baseVacStatusFilter==='ACTIVA'?'active':''}" data-base-vac-filter="ACTIVA">ACTIVAS</button>
       <button class="base-filter-btn ${baseVacStatusFilter==='CUBIERTA'?'active':''}" data-base-vac-filter="CUBIERTA">CUBIERTAS</button>
+      <button class="base-filter-btn ${baseVacStatusFilter==='EN PAUSA'?'active':''}" data-base-vac-filter="EN PAUSA">EN PAUSA</button>
+      <button class="base-filter-btn ${baseVacStatusFilter==='CANCELADA'?'active':''}" data-base-vac-filter="CANCELADA">CANCELADAS</button>
     </div>`;
 
     const vacHeaders=[
-      'ID VACANTE','VACANTE','UNIDAD DE NEGOCIO','SUCURSAL','Área','RECLUTADOR','MOTIVO VACANTE','HORARIO','COMENTARIOS','SUELDO 100%','CARGA HORARIA','VALES DE DESPENSA','FECHA DE SOLICITUD','ESTATUS','DÍAS','ALERTA DE VENCIMIENTO','ACCIONES'
+      'ID VACANTE','VACANTE','UNIDAD DE NEGOCIO','SUCURSAL','Área','RECLUTADOR','MOTIVO VACANTE','TURNO','HORARIO','COMENTARIOS','SUELDO 100%','CARGA HORARIA','VALES DE DESPENSA','FECHA DE SOLICITUD','ESTATUS','DÍAS','ALERTA DE VENCIMIENTO','ACCIONES'
     ];
     h+='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+
       vacHeaders.map(x=>{
@@ -1528,6 +1622,7 @@ function renderBase(type='vac'){
       <td>${r.area||'—'}</td>
       <td>${r.reclutador||'—'}</td>
       <td>${r.motivo||'—'}</td>
+      <td>${r.turno||'—'}</td>
       <td style="min-width:240px;white-space:normal;line-height:1.35">${r.horario||'—'}</td>
       <td style="min-width:180px;white-space:normal;line-height:1.35">${r.comentarios||'—'}</td>
       <td>${money(r.sueldo)}</td>
@@ -1547,9 +1642,42 @@ function renderBase(type='vac'){
     h+='</tbody></table></div>';
     box.innerHTML=h;
   }else if(type==='cont'){
-    box.innerHTML='<div class="small" style="margin:0 0 10px">Incluye ingresos con vacante y sin requisición formal. Los ingresos sin requisición cuentan en contrataciones y efectividad, pero no en indicadores de vacantes ni tiempo de cobertura.</div>'+baseTable(globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso),[['Nombre',r=>r.ingreso],['Vacante / rol',r=>r.vacante||'—'],['Origen',r=>r.origen==='SIN REQUISICIÓN'?'<span class="badge gray">SIN REQUISICIÓN</span>':'CON VACANTE'],['Unidad',r=>r.unidad],['Sucursal',r=>r.sucursal],['Ingreso',r=>fmtDate(r.ingresoFecha)],['Estatus permanencia',r=>tenureStatus(r)]]);
+    const rows=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+    let h=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <div class="small">Incluye ingresos con vacante y sin requisición formal. La fuente de reclutamiento es obligatoria para ingresos desde septiembre 2026.</div>
+      <button class="btn primary" data-base-add-hire style="${accessToken?'':'display:none'}">+ Agregar contratación</button>
+    </div>`;
+    h+='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+
+      ['NOMBRE','VACANTE / ROL','ORIGEN','UNIDAD','SUCURSAL','RECLUTADOR','INGRESO','FUENTE','FECHA BAJA','MOTIVO BAJA','ESTATUS','ACCIONES']
+      .map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
+    h+=rows.map(r=>`<tr>
+      <td><b>${r.ingreso||'—'}</b></td>
+      <td>${r.vacante||'—'}</td>
+      <td>${r.origen==='SIN REQUISICIÓN'?'<span class="badge gray">SIN REQUISICIÓN</span>':'CON VACANTE'}</td>
+      <td>${r.unidad||'—'}</td>
+      <td>${r.sucursal||'—'}</td>
+      <td>${r.reclutador||'—'}</td>
+      <td>${fmtDate(r.ingresoFecha)}</td>
+      <td>${r.fuente||((r.ingresoFecha||'')>='2026-09-01'?'<span class="badge yellow">PENDIENTE</span>':'—')}</td>
+      <td>${fmtDate(r.bajaFecha)}</td>
+      <td>${r.motivoBaja||'—'}</td>
+      <td>${tenureStatus(r)}</td>
+      <td><button class="row-action-btn edit" data-edit-hire="${r.id}" style="${accessToken?'':'display:none'}">Editar</button></td>
+    </tr>`).join('');
+    h+='</tbody></table></div>';
+    box.innerHTML=h;
   }else if(type==='bajas'){
-    box.innerHTML=baseTable(globalHireFiltered().filter(r=>r.bajaFecha),[['Nombre',r=>r.ingreso],['Fecha ingreso',r=>fmtDate(r.ingresoFecha)],['Fecha baja',r=>fmtDate(r.bajaFecha)],['Días laborados',r=>days(r.ingresoFecha,r.bajaFecha)],['Clasificación',r=>tenureStatus(r)]]);
+    box.innerHTML=baseTable(globalHireFiltered().filter(r=>r.bajaFecha),[
+      ['Nombre',r=>r.ingreso],
+      ['Vacante / rol',r=>r.vacante||'—'],
+      ['Unidad',r=>r.unidad||'—'],
+      ['Sucursal',r=>r.sucursal||'—'],
+      ['Fecha ingreso',r=>fmtDate(r.ingresoFecha)],
+      ['Fecha baja',r=>fmtDate(r.bajaFecha)],
+      ['Días laborados',r=>days(r.ingresoFecha,r.bajaFecha)],
+      ['Motivo de baja',r=>r.motivoBaja||'—'],
+      ['Clasificación',r=>tenureStatus(r)]
+    ]);
   }else{
     renderCatalogManager(box);
   }
@@ -1597,6 +1725,7 @@ function saveCatalogs(cats){
 
 function renderCatalogManager(box=document.getElementById('baseContent')){
   const cats=getCatalogs();
+  const canEdit=!!accessToken;
   box.innerHTML='<div class="catalog-grid">'+Object.entries(CATALOG_KEYS).map(([key,cfg])=>`
     <div class="catalog-card">
       <h3>${cfg.label}</h3>
@@ -1604,16 +1733,16 @@ function renderCatalogManager(box=document.getElementById('baseContent')){
         ${(cats[key]||[]).map((item,idx)=>`
           <div class="catalog-item">
             <span>${item}</span>
-            <div class="catalog-actions">
+            ${canEdit?`<div class="catalog-actions">
               <button class="icon-btn edit" onclick="editCatalogItem('${key}',${idx})">Editar</button>
               <button class="icon-btn delete" onclick="deleteCatalogItem('${key}',${idx})">Eliminar</button>
-            </div>
+            </div>`:''}
           </div>`).join('') || '<div class="small">Sin opciones registradas.</div>'}
       </div>
-      <div class="catalog-add">
+      ${canEdit?`<div class="catalog-add">
         <input id="add-${key}" placeholder="Agregar nueva opción">
         <button onclick="addCatalogItem('${key}')">Agregar</button>
-      </div>
+      </div>`:'<div class="small" style="margin-top:8px">Modo consulta.</div>'}
     </div>`).join('')+'</div>';
 }
 
@@ -1675,7 +1804,7 @@ function deleteCatalogItem(key,idx){
 
 function populateHireFormCatalogs(){
   const cats=getCatalogs();
-  const setOptions=(id,values,placeholder,optional=false)=>{
+  const setOptions=(id,values,placeholder)=>{
     const el=document.getElementById(id); if(!el) return;
     el.innerHTML=`<option value="">${placeholder}</option>`+(values||[]).map(v=>`<option value="${v}">${v}</option>`).join('');
   };
@@ -1684,18 +1813,78 @@ function populateHireFormCatalogs(){
   setOptions('nhSucursal',cats.sucursales||[],'Selecciona una sucursal');
   setOptions('nhArea',cats.areas||[],'Selecciona un área');
   setOptions('nhReclutador',cats.reclutadores||[],'Selecciona un reclutador');
-}
 
-function openHireModal(){
-  if(!accessToken){ alert('Inicia sesión como administrador para agregar contrataciones.'); return; }
+  const link=document.getElementById('nhVacanteLink');
+  if(link){
+    const options=[...data]
+      .sort((a,b)=>(a.codigo||a.id||'').localeCompare(b.codigo||b.id||'','es'))
+      .map(r=>`<option value="${r.id}">${r.codigo||r.id} · ${r.vacante} · ${r.sucursal} · ${r.estatus}</option>`).join('');
+    link.innerHTML='<option value="">SIN REQUISICIÓN</option>'+options;
+  }
+}
+function applyLinkedVacancy(){
+  const id=document.getElementById('nhVacanteLink')?.value||'';
+  const r=data.find(x=>x.id===String(id));
+  const note=document.getElementById('hireOriginNote');
+  if(!r){
+    if(note) note.innerHTML='Origen: <b>SIN REQUISICIÓN</b>';
+    return;
+  }
+  document.getElementById('nhRol').value=r.vacante||'';
+  document.getElementById('nhUnidad').value=r.unidad||'';
+  document.getElementById('nhSucursal').value=r.sucursal||'';
+  document.getElementById('nhArea').value=r.area||'';
+  document.getElementById('nhReclutador').value=r.reclutador||'';
+  if(note) note.innerHTML=`Origen: <b>CON VACANTE</b> · ${r.codigo||r.id}`;
+}
+function openHireModal(editId=''){
+  if(!accessToken){ alert('Inicia sesión como administrador para agregar o editar contrataciones.'); return; }
   populateHireFormCatalogs();
   document.getElementById('newHireForm').reset();
+  editingHireId=editId||'';
+
+  const title=document.getElementById('hireModalTitle');
+  const kicker=document.getElementById('hireModalKicker');
+  const submit=document.querySelector('#newHireForm button[type="submit"]');
+
+  if(editingHireId){
+    const r=hiresData.find(x=>x.id===String(editingHireId));
+    if(!r) return;
+    title.textContent='Editar contratación';
+    kicker.textContent='CONTRATACIÓN';
+    submit.textContent='Guardar cambios';
+    document.getElementById('nhVacanteLink').value=r.vacanteId||'';
+    document.getElementById('nhNombre').value=r.ingreso||'';
+    document.getElementById('nhRol').value=r.vacante||'';
+    document.getElementById('nhUnidad').value=r.unidad||'';
+    document.getElementById('nhSucursal').value=r.sucursal||'';
+    document.getElementById('nhArea').value=r.area||'';
+    document.getElementById('nhReclutador').value=r.reclutador||'';
+    document.getElementById('nhFechaIngreso').value=r.ingresoFecha||'';
+    document.getElementById('nhFechaBaja').value=r.bajaFecha||'';
+    document.getElementById('nhFuente').value=r.fuente||'';
+    document.getElementById('nhMotivoBaja').value=r.motivoBaja||'';
+    document.getElementById('nhFoto').value=r.foto||'';
+    document.getElementById('nhComentarios').value=r.comentarios||'';
+    document.getElementById('hireOriginNote').innerHTML=`Origen: <b>${r.origen||'SIN REQUISICIÓN'}</b>`;
+  }else{
+    title.textContent='Agregar contratación';
+    kicker.textContent='CONTRATACIÓN';
+    submit.textContent='Guardar contratación';
+    document.getElementById('hireOriginNote').innerHTML='Origen: <b>SIN REQUISICIÓN</b>';
+  }
+
   document.getElementById('hireModal').classList.add('open');
 }
-function closeHireModal(){ document.getElementById('hireModal').classList.remove('open'); }
+function closeHireModal(){
+  editingHireId='';
+  document.getElementById('hireModal').classList.remove('open');
+}
 
 async function saveManualHire(){
   if(!accessToken){ alert('Inicia sesión como administrador para guardar contrataciones.'); return false; }
+
+  const vacanteId=document.getElementById('nhVacanteLink').value;
   const ingreso=document.getElementById('nhNombre').value.trim();
   const vacante=document.getElementById('nhRol').value.trim();
   const unidad=document.getElementById('nhUnidad').value.trim();
@@ -1704,15 +1893,46 @@ async function saveManualHire(){
   const reclutador=document.getElementById('nhReclutador').value.trim();
   const ingresoFecha=document.getElementById('nhFechaIngreso').value;
   const bajaFecha=document.getElementById('nhFechaBaja').value;
+  const fuente=document.getElementById('nhFuente').value.trim();
+  const motivoBaja=document.getElementById('nhMotivoBaja').value.trim();
   const foto=document.getElementById('nhFoto').value.trim();
   const comentarios=document.getElementById('nhComentarios').value.trim();
-  if(!ingreso||!vacante||!unidad||!sucursal||!ingresoFecha){ alert('Completa todos los campos obligatorios.'); return false; }
+
+  if(!ingreso||!vacante||!unidad||!sucursal||!ingresoFecha){
+    alert('Completa todos los campos obligatorios.');
+    return false;
+  }
+  if(ingresoFecha>='2026-09-01' && !fuente){
+    alert('La fuente de reclutamiento es obligatoria para ingresos de septiembre 2026 en adelante.');
+    return false;
+  }
+  if(bajaFecha && bajaFecha<ingresoFecha){
+    alert('La fecha de baja no puede ser anterior a la fecha de ingreso.');
+    return false;
+  }
+
+  const record={
+    vacanteId,
+    ingreso,vacante,unidad,sucursal,area,reclutador,
+    ingresoFecha,bajaFecha,motivoBaja,fuente,foto,
+    origen:vacanteId?'CON VACANTE':'SIN REQUISICIÓN',
+    comentarios
+  };
+
   try{
-    await dbInsertHire({vacanteId:'',ingreso,vacante,unidad,sucursal,area,reclutador,ingresoFecha,bajaFecha,foto,origen:'SIN REQUISICIÓN',comentarios});
+    if(editingHireId){
+      await dbUpdateHire(editingHireId,hireToDb(record));
+    }else{
+      await dbInsertHire(record);
+    }
     closeHireModal();
     await loadVacancies();
     return true;
-  }catch(err){ console.error(err); alert('No se pudo guardar la contratación en Supabase.'); return false; }
+  }catch(err){
+    console.error(err);
+    alert('No se pudo guardar la contratación en Supabase.');
+    return false;
+  }
 }
 
 function populateVacancyFormCatalogs(){
@@ -1739,17 +1959,30 @@ function updateVacancyStatusFields(){
   const ingresoGroup=document.getElementById('nvIngresoFechaGroup');
   const ingresoNameGroup=document.getElementById('nvIngresoNombreGroup');
   const cancelGroup=document.getElementById('nvCancelacionFechaGroup');
+  const pauseGroup=document.getElementById('nvPausaFechaGroup');
+  const reactGroup=document.getElementById('nvReactivacionFechaGroup');
+
   const ingreso=document.getElementById('nvIngresoFecha');
   const cancel=document.getElementById('nvCancelacionFecha');
+  const pause=document.getElementById('nvPausaFecha');
+  const react=document.getElementById('nvReactivacionFecha');
 
+  const current=editingVacancyId?data.find(x=>x.id===editingVacancyId):null;
   const covered=status==='CUBIERTA';
   const cancelled=status==='CANCELADA';
+  const paused=status==='EN PAUSA';
+  const leavingPause=!!(current && current.estatus==='EN PAUSA' && status!=='EN PAUSA');
 
   if(ingresoGroup) ingresoGroup.style.display=covered?'block':'none';
   if(ingresoNameGroup) ingresoNameGroup.style.display=covered?'block':'none';
   if(cancelGroup) cancelGroup.style.display=cancelled?'block':'none';
+  if(pauseGroup) pauseGroup.style.display=paused?'block':'none';
+  if(reactGroup) reactGroup.style.display=leavingPause?'block':'none';
+
   if(ingreso) ingreso.required=covered;
   if(cancel) cancel.required=cancelled;
+  if(pause) pause.required=paused;
+  if(react) react.required=leavingPause;
 }
 
 function openVacancyModal(editId=''){
@@ -1773,11 +2006,14 @@ function openVacancyModal(editId=''){
       document.getElementById('nvReclutador').value=row.reclutador||'';
       document.getElementById('nvPlazas').value=row.plazas||1;
       document.getElementById('nvMotivo').value=row.motivo||'';
+      document.getElementById('nvTurno').value=row.turno||'';
       document.getElementById('nvSolicitud').value=row.solicitud||'';
       document.getElementById('nvEstatus').value=row.estatus||'ACTIVA';
       document.getElementById('nvIngresoFecha').value=row.ingresoFecha||'';
       document.getElementById('nvIngresoNombre').value=row.ingreso||'';
       document.getElementById('nvCancelacionFecha').value=row.cancelacionFecha||'';
+      document.getElementById('nvPausaFecha').value=row.pausaFecha||'';
+      document.getElementById('nvReactivacionFecha').value='';
       document.getElementById('nvHorario').value=row.horario||'';
       document.getElementById('nvComentarios').value=row.comentarios||'';
       document.getElementById('nvSueldo').value=row.sueldo||'';
@@ -1792,6 +2028,9 @@ function openVacancyModal(editId=''){
     document.getElementById('nvIngresoFecha').value='';
     document.getElementById('nvIngresoNombre').value='';
     document.getElementById('nvCancelacionFecha').value='';
+    document.getElementById('nvPausaFecha').value='';
+    document.getElementById('nvReactivacionFecha').value='';
+    document.getElementById('nvTurno').value='';
   }
 
   updateVacancyStatusFields();
@@ -1813,6 +2052,7 @@ async function saveVacancyFromForm(){
   const reclutador=document.getElementById('nvReclutador').value.trim();
   const plazas=parseInt(document.getElementById('nvPlazas').value||'1',10);
   const motivo=document.getElementById('nvMotivo').value.trim();
+  const turno=document.getElementById('nvTurno').value.trim();
   const horario=document.getElementById('nvHorario').value.trim();
   const comentarios=document.getElementById('nvComentarios').value.trim();
   const sueldo=parseFloat(document.getElementById('nvSueldo').value||'0');
@@ -1823,6 +2063,8 @@ async function saveVacancyFromForm(){
   const ingresoFecha=document.getElementById('nvIngresoFecha').value;
   const ingresoNombre=document.getElementById('nvIngresoNombre').value.trim();
   const cancelacionFecha=document.getElementById('nvCancelacionFecha').value;
+  const pausaFecha=document.getElementById('nvPausaFecha').value;
+  const reactivacionFecha=document.getElementById('nvReactivacionFecha').value;
 
   if(!vacante||!unidad||!sucursal||!area||!reclutador||!motivo||!solicitud||!estatus){
     alert('Completa todos los campos obligatorios.');
@@ -1836,6 +2078,16 @@ async function saveVacancyFromForm(){
     alert('Para marcar una vacante como CANCELADA debes indicar la fecha de cancelación.');
     return false;
   }
+  if(estatus==='EN PAUSA' && !pausaFecha){
+    alert('Para marcar una vacante como EN PAUSA debes indicar la fecha de pausa.');
+    return false;
+  }
+  const currentEdit=editingVacancyId?data.find(x=>x.id===editingVacancyId):null;
+  const leavingPause=!!(currentEdit && currentEdit.estatus==='EN PAUSA' && estatus!=='EN PAUSA');
+  if(leavingPause && !reactivacionFecha){
+    alert('Indica la fecha de reactivación para descontar correctamente los días en pausa del SLA.');
+    return false;
+  }
   if(estatus==='CUBIERTA' && ingresoFecha<solicitud){
     alert('La fecha de ingreso no puede ser anterior a la fecha de solicitud.');
     return false;
@@ -1844,11 +2096,37 @@ async function saveVacancyFromForm(){
     alert('La fecha de cancelación no puede ser anterior a la fecha de solicitud.');
     return false;
   }
+  if(estatus==='EN PAUSA' && pausaFecha<solicitud){
+    alert('La fecha de pausa no puede ser anterior a la fecha de solicitud.');
+    return false;
+  }
+  if(leavingPause && currentEdit?.pausaFecha && reactivacionFecha<currentEdit.pausaFecha){
+    alert('La fecha de reactivación no puede ser anterior a la fecha de pausa.');
+    return false;
+  }
+
+  let diasPausaAcumulados=Number(currentEdit?.diasPausaAcumulados||0);
+  let pausaFinal=currentEdit?.pausaFecha||'';
+  let reactivacionFinal=currentEdit?.reactivacionFecha||'';
+
+  if(estatus==='EN PAUSA'){
+    // Al iniciar una nueva pausa, conserva el acumulado histórico y abre un nuevo periodo.
+    if(currentEdit?.estatus!=='EN PAUSA' || pausaFecha!==currentEdit?.pausaFecha){
+      pausaFinal=pausaFecha;
+      reactivacionFinal='';
+    }else{
+      pausaFinal=pausaFecha;
+    }
+  }else if(leavingPause){
+    const extra=days(currentEdit.pausaFecha,reactivacionFecha)||0;
+    diasPausaAcumulados+=extra;
+    reactivacionFinal=reactivacionFecha;
+  }
 
   const payload={
     vacante,unidad,sucursal,area,reclutador,
     plazas:Math.max(1,plazas||1),
-    motivo,horario,comentarios,
+    motivo,turno,horario,comentarios,
     sueldo:isNaN(sueldo)?0:sueldo,
     carga:isNaN(carga)?0:carga,
     vales:isNaN(vales)?0:vales,
@@ -1856,6 +2134,9 @@ async function saveVacancyFromForm(){
     ingresoFecha:estatus==='CUBIERTA'?ingresoFecha:'',
     ingreso:estatus==='CUBIERTA'?ingresoNombre:'',
     cancelacionFecha:estatus==='CANCELADA'?cancelacionFecha:'',
+    pausaFecha:pausaFinal,
+    reactivacionFecha:reactivacionFinal,
+    diasPausaAcumulados,
     bajaFecha:'',
     foto:''
   };
@@ -2235,6 +2516,14 @@ document.addEventListener('click',e=>{
   if(deleteVac){
     deleteVacancy(deleteVac.dataset.deleteVacancy);
   }
+  const editHire=e.target.closest('[data-edit-hire]');
+  if(editHire){
+    openHireModal(editHire.dataset.editHire);
+  }
+  const addHire=e.target.closest('[data-base-add-hire]');
+  if(addHire){
+    openHireModal();
+  }
 });
 document.getElementById('adminBtn').onclick=()=>{
   document.getElementById('adminLoginMsg').textContent='';
@@ -2263,7 +2552,7 @@ document.getElementById('personStatus').addEventListener('change',()=>renderEffe
 document.getElementById('vacStatusFilter').addEventListener('change',()=>renderVacTable());
 document.getElementById('vacDaysFilter').addEventListener('change',()=>renderVacTable());
 
-document.getElementById('newHireBtn').onclick=openHireModal;
+document.getElementById('newHireBtn').onclick=()=>openHireModal();
 document.getElementById('closeHireModal').onclick=closeHireModal;
 document.getElementById('cancelHireModal').onclick=closeHireModal;
 document.getElementById('hireModal').addEventListener('click',e=>{if(e.target.id==='hireModal')closeHireModal()});
@@ -2272,6 +2561,7 @@ document.getElementById('newVacBtn').onclick=()=>openVacancyModal();
 document.getElementById('closeVacancyModal').onclick=closeVacancyModal;
 document.getElementById('cancelVacancyModal').onclick=closeVacancyModal;
 document.getElementById('nvEstatus').addEventListener('change',updateVacancyStatusFields);
+document.getElementById('nhVacanteLink').addEventListener('change',applyLinkedVacancy);
 
 document.getElementById('vacancyModal').addEventListener('click',e=>{
   if(e.target.id==='vacancyModal') closeVacancyModal();
