@@ -39,7 +39,9 @@ create policy "anon envia solicitud de vacante"
 
 grant insert on public.vacantes_2026 to anon;
 
--- 4) Si la tabla tiene un CHECK sobre "estatus" que solo permite ACTIVA/CUBIERTA/EN PAUSA/CANCELADA,
---    hay que agregarle 'POR ASIGNAR'. Revísalo con:
---      select conname, pg_get_constraintdef(oid) from pg_constraint
---      where conrelid = 'public.vacantes_2026'::regclass and contype = 'c';
+-- 4) La tabla tiene un CHECK sobre "estatus" (vacantes_2026_estatus_check) que no acepta 'POR ASIGNAR'.
+--    Se reemplaza por uno que incluye todos los estatus que usa el portal.
+alter table public.vacantes_2026 drop constraint if exists vacantes_2026_estatus_check;
+alter table public.vacantes_2026
+  add constraint vacantes_2026_estatus_check
+  check (estatus in ('ACTIVA','CUBIERTA','EN PAUSA','CANCELADA','POR ASIGNAR'));
