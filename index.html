@@ -493,6 +493,16 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
           </div>
 
           <div class="form-group">
+            <label>Prioridad</label>
+            <select class="form-control" id="nvPrioridad">
+              <option value="">Sin prioridad</option>
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>N° de plazas <span class="req">*</span></label>
             <input class="form-control" id="nvPlazas" type="number" min="1" value="1" required>
           </div>
@@ -775,7 +785,8 @@ function vacancyToDb(r){
     dias_pausa_acumulados:Number(r.diasPausaAcumulados||0),
     nombre_ingreso:r.ingreso||null,
     fecha_baja:r.bajaFecha||null,
-    foto_url:r.foto||null
+    foto_url:r.foto||null,
+    prioridad:r.prioridad||null
   };
 }
 
@@ -934,7 +945,7 @@ function solicitudRowsHtml(){
       <td>${fmtDate(r.solicitud)}</td>
       <td><span class="badge blue">POR ASIGNAR</span></td>
       <td>—</td><td>—</td>
-      <td><div class="row-actions"><button class="row-action-btn edit" data-sol-detail="${r.id}">Ver detalle</button>${admin?`<button class="row-action-btn delete" data-sol-reject="${r.id}">Rechazar</button>`:''}</div></td>
+      <td><div class="row-actions"><button class="row-action-btn edit" data-sol-detail="${r.id}">Ver detalle</button>${admin?`<button class="row-action-btn edit" data-edit-vacancy="${r.id}">Editar</button><button class="row-action-btn delete" data-sol-reject="${r.id}">Eliminar</button>`:''}</div></td>
     </tr>`).join('');
 }
 
@@ -985,7 +996,7 @@ async function assignSolicitud(id){
 async function rejectSolicitud(id){
   if(!accessToken){ alert('Inicia sesión como administrador.'); return; }
   const sol=solicitudes.rows.find(x=>x.id===String(id));
-  if(!sol||!confirm(`Rechazar y eliminar la solicitud de "${sol.vacante}"?`)) return;
+  if(!sol||!confirm(`¿Eliminar la solicitud de "${sol.vacante}"? Esta acción quitará el registro.`)) return;
   try{ await dbDeleteVacancy(id); await loadVacancies(); }
   catch(err){ console.error(err); alert('No se pudo eliminar la solicitud.'); }
 }
@@ -2105,10 +2116,21 @@ function openVacancyModal(editId=''){
   const title=document.getElementById('vacancyModalTitle');
   const saveBtn=document.getElementById('saveVacancyBtn');
 
+  const isSol=!!(editingVacancyId && solicitudes.rows.some(x=>x.id===editingVacancyId));
+  const ensureOption=(id,v)=>{
+    const el=document.getElementById(id);
+    if(v && el && ![...el.options].some(o=>o.value===v)) el.add(new Option(v,v));
+  };
+  const estSel=document.getElementById('nvEstatus');
+  [...estSel.options].filter(o=>o.value===SOLICITUD_STATUS).forEach(o=>o.remove());
+  if(isSol) estSel.add(new Option('POR ASIGNAR (sin asignar)',SOLICITUD_STATUS),0);
+  document.getElementById('nvReclutador').required=!isSol;
+
   if(editingVacancyId){
-    const row=data.find(x=>x.id===editingVacancyId);
+    const row=data.find(x=>x.id===editingVacancyId)||solicitudes.rows.find(x=>x.id===editingVacancyId);
     if(row){
-      title.textContent='Editar vacante';
+      [['nvVacante',row.vacante],['nvUnidad',row.unidad],['nvSucursal',row.sucursal],['nvArea',row.area],['nvReclutador',row.reclutador]].forEach(([id,v])=>ensureOption(id,v));
+      title.textContent=isSol?'Editar solicitud':'Editar vacante';
       saveBtn.textContent='Guardar cambios';
       document.getElementById('nvVacante').value=row.vacante||'';
       document.getElementById('nvUnidad').value=row.unidad||'';
@@ -2120,6 +2142,7 @@ function openVacancyModal(editId=''){
       document.getElementById('nvTurno').value=row.turno||'';
       document.getElementById('nvSolicitud').value=row.solicitud||'';
       document.getElementById('nvEstatus').value=row.estatus||'ACTIVA';
+      document.getElementById('nvPrioridad').value=row.prioridad||'';
       document.getElementById('nvIngresoFecha').value=row.ingresoFecha||'';
       document.getElementById('nvIngresoNombre').value=row.ingreso||'';
       document.getElementById('nvCancelacionFecha').value=row.cancelacionFecha||'';
@@ -2133,6 +2156,7 @@ function openVacancyModal(editId=''){
     }
   }else{
     title.textContent='Nueva vacante';
+    document.getElementById('nvPrioridad').value='';
     saveBtn.textContent='Guardar vacante';
     document.getElementById('nvPlazas').value=1;
     document.getElementById('nvEstatus').value='ACTIVA';
@@ -2170,15 +2194,26 @@ async function saveVacancyFromForm(){
   const carga=parseFloat(document.getElementById('nvCarga').value||'0');
   const vales=parseFloat(document.getElementById('nvVales').value||'0');
   const solicitud=document.getElementById('nvSolicitud').value;
-  const estatus=document.getElementById('nvEstatus').value;
+  let estatus=document.getElementById('nvEstatus').value;
+  const prioridad=document.getElementById('nvPrioridad').value;
+  const editingSol=editingVacancyId?solicitudes.rows.find(x=>x.id===editingVacancyId):null;
+  if(editingSol && reclutador && estatus===SOLICITUD_STATUS) estatus='ACTIVA';
   const ingresoFecha=document.getElementById('nvIngresoFecha').value;
   const ingresoNombre=document.getElementById('nvIngresoNombre').value.trim();
   const cancelacionFecha=document.getElementById('nvCancelacionFecha').value;
   const pausaFecha=document.getElementById('nvPausaFecha').value;
   const reactivacionFecha=document.getElementById('nvReactivacionFecha').value;
 
-  if(!vacante||!unidad||!sucursal||!area||!reclutador||!motivo||!solicitud||!estatus){
+  if(!vacante||!unidad||!sucursal||!area||(!reclutador&&!editingSol)||!motivo||!solicitud||!estatus){
     alert('Completa todos los campos obligatorios.');
+    return false;
+  }
+  if(editingSol && estatus!==SOLICITUD_STATUS && !reclutador){
+    alert('Asigna un reclutador o deja el estatus en POR ASIGNAR.');
+    return false;
+  }
+  if(editingSol && reclutador && !prioridad){
+    alert('Asigna una prioridad junto con el reclutador.');
     return false;
   }
   if(estatus==='CUBIERTA' && !ingresoFecha){
@@ -2241,7 +2276,7 @@ async function saveVacancyFromForm(){
     sueldo:isNaN(sueldo)?0:sueldo,
     carga:isNaN(carga)?0:carga,
     vales:isNaN(vales)?0:vales,
-    solicitud,estatus,
+    solicitud,estatus,prioridad,
     ingresoFecha:estatus==='CUBIERTA'?ingresoFecha:'',
     ingreso:estatus==='CUBIERTA'?ingresoNombre:'',
     cancelacionFecha:estatus==='CANCELADA'?cancelacionFecha:'',
@@ -2254,8 +2289,10 @@ async function saveVacancyFromForm(){
 
   try{
     if(editingVacancyId){
-      const current=data.find(x=>x.id===editingVacancyId);
-      await dbUpdateVacancy(editingVacancyId,vacancyToDb({...current,...payload}));
+      const current=data.find(x=>x.id===editingVacancyId)||editingSol;
+      const patch=vacancyToDb({...current,...payload});
+      if(editingSol){ delete patch.codigo_vacante; patch.reclutador=reclutador?patch.reclutador:null; }
+      await dbUpdateVacancy(editingVacancyId,patch);
     }else{
       await dbInsertVacancy(payload);
     }
