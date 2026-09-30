@@ -34,6 +34,26 @@ main{padding:18px 14px 40px;max-width:1600px;margin:auto}
 .multi-select-option{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12px}
 .multi-select-option:hover{background:#f3f1eb}
 .multi-select-option input{margin:0;accent-color:#145c45}
+
+.period-filter{position:relative}
+.period-toggle{width:100%;border:0;background:transparent;font:inherit;font-weight:700;text-align:left;padding:2px 22px 2px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.period-toggle:after{content:'⌄';position:absolute;right:1px;top:-1px;font-size:18px;color:#34454f}
+.period-menu{display:none;position:absolute;left:-11px;top:calc(100% + 9px);z-index:70;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:12px;width:min(430px,88vw)}
+.period-filter.open .period-menu{display:block}
+.period-menu-title{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#667085;margin-bottom:7px}
+.period-months{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.period-month{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:11px;font-weight:700;cursor:pointer;background:#fff}
+.period-month:hover{background:#F7F5EF}
+.period-month input{margin:0;accent-color:#145c45}
+.period-separator{height:1px;background:var(--line);margin:12px 0}
+.period-range{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.period-range label{display:block;font-size:9px!important;margin-bottom:3px!important}
+.period-range input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:11px}
+.period-actions{display:flex;justify-content:space-between;gap:7px;margin-top:10px}
+.period-actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:800;cursor:pointer}
+.period-actions button.primary-mini{background:#123D31;color:#fff;border-color:#123D31}
+.period-mode-note{font-size:9px;color:var(--muted);margin-top:7px;line-height:1.35}
+
 .multi-select-actions{display:flex;gap:6px;padding:5px 7px 8px;position:sticky;top:0;background:#fff;z-index:2}
 .multi-select-actions button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 7px;font-size:10px;font-weight:800;cursor:pointer}
 
@@ -220,7 +240,25 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
 
 <main>
   <div class="filters" id="globalFilters">
-    <div class="filter"><label>Periodo</label><select id="periodo"></select></div>
+    <div class="filter period-filter" id="periodFilter">
+      <label>Periodo</label>
+      <button type="button" class="period-toggle" id="periodToggle">Acumulado 2026</button>
+      <div class="period-menu" id="periodMenu">
+        <div class="period-menu-title">Seleccionar meses</div>
+        <div class="period-months" id="periodMonths"></div>
+        <div class="period-separator"></div>
+        <div class="period-menu-title">Rango personalizado</div>
+        <div class="period-range">
+          <div><label for="periodStart">Desde</label><input type="date" id="periodStart" min="2026-01-01" max="2026-12-31"></div>
+          <div><label for="periodEnd">Hasta</label><input type="date" id="periodEnd" min="2026-01-01" max="2026-12-31"></div>
+        </div>
+        <div class="period-mode-note">El rango personalizado reemplaza temporalmente la selección de meses.</div>
+        <div class="period-actions">
+          <button type="button" id="periodAll">Acumulado 2026</button>
+          <div style="display:flex;gap:6px"><button type="button" id="periodClear">Limpiar</button><button type="button" class="primary-mini" id="periodApplyRange">Aplicar rango</button></div>
+        </div>
+      </div>
+    </div>
 
     <div class="filter"><label>Unidad de negocio</label>
       <div class="multi-select" id="unidadMulti">
@@ -618,6 +656,9 @@ let effChartFilter='';
 let baseVacStatusFilter='';
 let editingVacancyId='';
 let editingHireId='';
+
+const periodState={months:new Set(),start:'',end:'',mode:'all'};
+
 const solicitudes={rows:[]}; // filas de vacantes_2026 con estatus POR ASIGNAR (llegaron por formulario)
 
 const TODAY = new Date('2026-09-15T12:00:00');
@@ -1111,29 +1152,53 @@ function baseVacStatusBadge(r){
 
 
 function monthIndex(s){ const x=d(s); return x?x.getMonth():null; }
-function periodPredicate(r, dateField='solicitud'){
-  const val=document.getElementById('periodo').value;
-  if(val==='all') return true;
-  const x=d(r[dateField]); if(!x) return false;
-  return x.getMonth()===Number(val);
+function periodWindows(){
+  if(periodState.mode==='range'&&periodState.start&&periodState.end){
+    const start=d(periodState.start),end=d(periodState.end); if(start&&end) return [{start,end}];
+  }
+  if(periodState.mode==='months'&&periodState.months.size){
+    return [...periodState.months].sort((a,b)=>a-b).map(m=>({start:new Date(2026,m,1,12,0,0),end:new Date(2026,m+1,0,12,0,0)}));
+  }
+  return [];
 }
-
+function periodHasFilter(){return periodWindows().length>0;}
+function periodDateMatches(value){
+  if(!periodHasFilter()) return true;
+  const x=d(value); if(!x) return false;
+  return periodWindows().some(w=>x>=w.start&&x<=w.end);
+}
+function periodPredicate(r,dateField='solicitud'){return periodDateMatches(r[dateField]);}
 function selectedMonthBounds(){
-  const val=document.getElementById('periodo').value;
-  if(val==='all') return null;
-  const m=Number(val);
-  return {
-    start:new Date(2026,m,1,12,0,0),
-    end:new Date(2026,m+1,0,12,0,0)
-  };
+  const windows=periodWindows(); if(!windows.length) return null;
+  const sorted=[...windows].sort((a,b)=>a.start-b.start);
+  return {start:sorted[0].start,end:sorted[sorted.length-1].end,windows:sorted};
 }
-
-
-
-
-
-
-
+function selectedPeriodContainsDate(value){return periodDateMatches(value);}
+function updatePeriodLabel(){
+  const btn=document.getElementById('periodToggle'); if(!btn) return;
+  if(periodState.mode==='range'&&periodState.start&&periodState.end){btn.textContent=`${fmtDate(periodState.start)} – ${fmtDate(periodState.end)}`;btn.title='Rango personalizado';return;}
+  if(periodState.mode==='months'&&periodState.months.size){
+    const ms=[...periodState.months].sort((a,b)=>a-b);
+    if(ms.length===1) btn.textContent=`${MONTHS[ms[0]][0]+MONTHS[ms[0]].slice(1).toLowerCase()} 2026`;
+    else if(ms.length<=3) btn.textContent=ms.map(i=>MONTH_SHORT[i]).join(' + ')+' 2026';
+    else btn.textContent=`${ms.length} meses seleccionados`;
+    btn.title=ms.map(i=>MONTHS[i]).join(', ');return;
+  }
+  btn.textContent='Acumulado 2026';btn.title='Todo 2026';
+}
+function renderPeriodMonths(){
+  const box=document.getElementById('periodMonths'); if(!box) return;
+  box.innerHTML=MONTHS.map((m,i)=>`<label class="period-month"><input type="checkbox" data-period-month="${i}" ${periodState.mode==='months'&&periodState.months.has(i)?'checked':''}><span>${m[0]+m.slice(1).toLowerCase()}</span></label>`).join('');
+}
+function applyMonthSelection(){
+  periodState.start='';periodState.end='';periodState.mode=periodState.months.size?'months':'all';
+  document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';
+  updatePeriodLabel();renderAll();
+}
+function setSingleMonthPeriod(monthIndexValue){
+  periodState.months.clear();periodState.months.add(Number(monthIndexValue));periodState.mode='months';periodState.start='';periodState.end='';
+  renderPeriodMonths();updatePeriodLabel();renderAll();
+}
 function filteredIgnoringPeriod(){
   return data.filter(r=>
     multiMatches('unidad',r.unidad) &&
@@ -1184,7 +1249,7 @@ function coveredVacanciesForSelectedPeriod(){
     if(solicitud && ingreso<solicitud) return false;
 
     if(!bounds) return ingreso.getFullYear()===2026;
-    return ingreso>=bounds.start && ingreso<=bounds.end;
+    return selectedPeriodContainsDate(r.ingresoFecha);
   });
 }
 
@@ -1207,8 +1272,8 @@ function totalVacanciesForSelectedPeriod(){
     const ingreso=d(r.ingresoFecha);
     const validIngreso = ingreso && (!solicitud || ingreso>=solicitud);
 
-    const openedInPeriod = solicitud>=bounds.start && solicitud<=bounds.end;
-    const coveredInPeriod = validIngreso && ingreso>=bounds.start && ingreso<=bounds.end;
+    const openedInPeriod = selectedPeriodContainsDate(r.solicitud);
+    const coveredInPeriod = validIngreso && selectedPeriodContainsDate(r.ingresoFecha);
     const stAtEnd=statusForSelectedPeriod(r);
     const activeAtPeriodEnd = stAtEnd==='ACTIVA' || stAtEnd==='EN PAUSA';
 
@@ -1228,17 +1293,13 @@ function globalFiltered(dateField='solicitud'){
 }
 
 function globalHireFiltered(){
-  const val=document.getElementById('periodo').value;
-
-  return hiresData.filter(r=>{
-    const x=d(r.ingresoFecha);
-    const periodOk = val==='all' ? true : (x && x.getMonth()===Number(val));
-    return periodOk &&
-      multiMatches('unidad',r.unidad) &&
-      multiMatches('sucursal',r.sucursal) &&
-      multiMatches('area',r.area) &&
-      multiMatches('reclutador',r.reclutador);
-  });
+  return hiresData.filter(r=>
+    periodDateMatches(r.ingresoFecha) &&
+    multiMatches('unidad',r.unidad) &&
+    multiMatches('sucursal',r.sucursal) &&
+    multiMatches('area',r.area) &&
+    multiMatches('reclutador',r.reclutador)
+  );
 }
 
 function distinct(k){
@@ -1312,15 +1373,13 @@ function updateMultiLabel(key){
 
 
 function setupFilters(){
-  document.getElementById('periodo').innerHTML='<option value="all">Acumulado 2026</option>'+MONTHS.slice(0,9).map((m,i)=>`<option value="${i}">${m[0]+m.slice(1).toLowerCase()} 2026</option>`).join('');
-
+  renderPeriodMonths();
+  updatePeriodLabel();
   const cats=getCatalogs();
   renderMultiSelect('unidad',cats.unidades||distinct('unidad'));
   renderMultiSelect('sucursal',cats.sucursales||distinct('sucursal'));
   renderMultiSelect('area',cats.areas||distinct('area'));
   renderMultiSelect('reclutador',cats.reclutadores||distinct('reclutador'));
-
-  document.getElementById('periodo').onchange=renderAll;
 }
 function dataQualityIssues(){
   return filteredIgnoringPeriod().filter(r=>{
@@ -2395,7 +2454,7 @@ function openTotalVacanciesDetail(){
     const solicitud=d(r.solicitud);
     if(!solicitud) return false;
     if(!bounds) return solicitud.getFullYear()===2026;
-    return solicitud>=bounds.start && solicitud<=bounds.end;
+    return selectedPeriodContainsDate(r.solicitud);
   });
 
   const rowHtml=(r)=>`
@@ -2548,6 +2607,25 @@ function renderAll(){
   renderKPIs();renderGauges();renderAlerts();renderRecruitmentTrend();renderMatrix();renderVacOps();renderVacTable();renderEffectiveness();
   const activeBase=document.querySelector('.subtab.active')?.dataset.base||'vac'; renderBase(activeBase);
 }
+document.getElementById('periodToggle').addEventListener('click',e=>{
+  e.stopPropagation();document.getElementById('periodFilter').classList.toggle('open');document.querySelectorAll('.multi-select.open').forEach(x=>x.classList.remove('open'));
+});
+document.getElementById('periodMonths').addEventListener('change',e=>{
+  const cb=e.target.closest('[data-period-month]');if(!cb)return;const m=Number(cb.dataset.periodMonth);if(cb.checked)periodState.months.add(m);else periodState.months.delete(m);applyMonthSelection();
+});
+document.getElementById('periodApplyRange').addEventListener('click',()=>{
+  const start=document.getElementById('periodStart').value,end=document.getElementById('periodEnd').value;
+  if(!start||!end){alert('Selecciona una fecha de inicio y una fecha final.');return;}
+  if(end<start){alert('La fecha final no puede ser anterior a la fecha inicial.');return;}
+  periodState.start=start;periodState.end=end;periodState.months.clear();periodState.mode='range';renderPeriodMonths();updatePeriodLabel();document.getElementById('periodFilter').classList.remove('open');renderAll();
+});
+document.getElementById('periodAll').addEventListener('click',()=>{
+  periodState.months.clear();periodState.start='';periodState.end='';periodState.mode='all';document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';renderPeriodMonths();updatePeriodLabel();document.getElementById('periodFilter').classList.remove('open');renderAll();
+});
+document.getElementById('periodClear').addEventListener('click',()=>{
+  periodState.months.clear();periodState.start='';periodState.end='';periodState.mode='all';document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';renderPeriodMonths();updatePeriodLabel();renderAll();
+});
+
 document.addEventListener('click',e=>{
   const multiToggle=e.target.closest('[data-multi-toggle]');
   if(multiToggle){
@@ -2577,6 +2655,7 @@ document.addEventListener('click',e=>{
   }
 
   if(!e.target.closest('.multi-select')) document.querySelectorAll('.multi-select.open').forEach(x=>x.classList.remove('open'));
+  if(!e.target.closest('.period-filter')) document.getElementById('periodFilter')?.classList.remove('open');
 
 
   const tab=e.target.closest('.tab'); if(tab){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));tab.classList.add('active');['resumen','vacantes','efectividad','base'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hidden',x!==tab.dataset.tab));}
@@ -2599,14 +2678,11 @@ document.addEventListener('click',e=>{
   }
   const seg=e.target.closest('.stack-seg[data-status]'); if(seg){
     effChartFilter=seg.dataset.status;
-    const period=document.getElementById('periodo');
-    period.value=seg.dataset.month;
-    renderAll();
+    setSingleMonthPeriod(seg.dataset.month);
   }
   const stack=e.target.closest('.stack-bar[data-month]'); if(stack && !e.target.closest('.stack-seg')){
     effChartFilter='';
-    document.getElementById('periodo').value=stack.dataset.month;
-    renderAll();
+    setSingleMonthPeriod(stack.dataset.month);
   }
   const bub=e.target.closest('.bubble'); if(bub){
     const rs=totalVacanciesForSelectedPeriod().filter(r=>r.unidad===bub.dataset.unit&&r.area===bub.dataset.area);
