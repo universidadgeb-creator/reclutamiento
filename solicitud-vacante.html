@@ -132,6 +132,7 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         <div class="q" data-key="area" data-req>
           <div class="label">Área</div>
           <div class="chips" data-chips="radio" data-name="area"></div>
+          <input class="line hidden" id="areaOtraTxt" placeholder="Escribe el área" style="margin-top:14px">
         </div>
 
         <div class="q" data-key="fechaIngreso" data-req>
@@ -142,11 +143,14 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         <div class="q" data-key="tipo" data-req>
           <div class="label">Tipo de requisición</div>
           <div class="chips" data-chips="radio" data-name="tipo"></div>
+          <p class="note hidden" id="reemplazoNotice" style="margin-top:14px">
+            <b>Importante:</b> Si la vacante tiene un horario, sueldo o sexo distinto al de la persona que reemplaza, deberá solicitarse como una <b>Nueva posición</b>.
+          </p>
         </div>
 
         <div class="q" data-key="justificacion" data-req>
           <label for="justificacion">Justificación de la vacante</label>
-          <textarea class="box" id="justificacion" rows="3" placeholder="¿Por qué se necesita esta posición?"></textarea>
+          <textarea class="box" id="justificacion" rows="3" placeholder="Ej. Se reemplaza la posición de Fulanito, Coach matutino, que dejó de asistir la semana pasada."></textarea>
         </div>
       </section>
 
@@ -188,8 +192,9 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         <h2>Horario y compensación</h2>
 
         <div class="q" data-key="carga" data-req>
-          <div class="label">Condiciones laborales</div>
+          <div class="label">Carga horaria</div>
           <div class="chips" data-chips="radio" data-name="carga"></div>
+          <input class="line hidden" id="cargaOtraTxt" type="number" min="1" step="1" inputmode="numeric" placeholder="Escribe el número de horas" style="margin-top:14px">
         </div>
 
         <div class="q" data-key="horario" data-req>
@@ -209,8 +214,9 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         </div>
 
         <div class="q" data-key="bono" data-req>
-          <label for="bono">Bono</label>
-          <input class="line" id="bono" placeholder="Si no aplica, escribe “No aplica”">
+          <div class="label">Tipo de bono</div>
+          <div class="chips" data-chips="radio" data-name="bono"></div>
+          <input class="line hidden" id="bonoOtroTxt" placeholder="Escribe cuál es el tipo de bono" style="margin-top:14px">
         </div>
 
         <div class="q" data-key="prestaciones" data-req>
@@ -224,8 +230,9 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         </div>
 
         <div class="q" data-key="autorizacion">
-          <label for="autorizacion">Autorización <span class="opt">· opcional</span></label>
-          <input class="line" id="autorizacion" placeholder="Nombre de quien autoriza la requisición">
+          <label for="autorizacion">Proceso de entrevistas · ¿Quiénes entrevistan? <span class="opt">· opcional</span></label>
+          <p class="hint">Especifica el nombre y rol de la persona que realizará la entrevista en cada parte del proceso.</p>
+          <textarea class="box" id="autorizacion" rows="3" placeholder="Ej. Primera entrevista: Ana Pérez, Gerente de sucursal. Segunda entrevista: Luis Gómez, Líder del área."></textarea>
         </div>
       </section>
 
@@ -253,12 +260,13 @@ const H={'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
 const $=id=>document.getElementById(id);
 
 const OPTIONS={
-  area:['Recepción','Comercial','Mantenimiento','Orden y Limpieza','Coaches','Nutrición','Concierge','Kids','Dirección','Capital Humano','Sistemas'],
+  area:['Recepción','Comercial','Mantenimiento','Orden y Limpieza','Coaches','Nutrición','Concierge','Kids','Dirección','Capital Humano','Sistemas','Otra'],
   tipo:['Reemplazo','Nueva posición','Incremento de plantilla','Temporal','Proyecto especial'],
-  escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Licenciatura','Maestría'],
+  escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Estudiante de Licenciatura','Licenciatura','Maestría'],
   genero:['Masculino','Femenino','Indistinto'],
   competencias:['Servicio al cliente','Liderazgo','Organización','Comunicación','Trabajo en equipo','Ventas','Análisis','Planeación'],
-  carga:['24 horas','27 horas','40 horas','48 horas']
+  carga:['30 horas','40 horas','48 horas','Otra'],
+  bono:['Mensual','Trimestral','Otro']
 };
 
 // --- construir chips ---
@@ -278,14 +286,61 @@ $('compOtra').addEventListener('change',()=>{
   $('compOtraTxt').classList.toggle('hidden',!$('compOtra').checked);
   if($('compOtra').checked) $('compOtraTxt').focus();
 });
-$('f').addEventListener('reset',()=>setTimeout(()=>$('compOtraTxt').classList.add('hidden'),0));
+
+function toggleOtherField(groupName, triggerValue, inputId){
+  const selected=document.querySelector(`input[name="${groupName}"]:checked`);
+  const input=$(inputId);
+  const show=selected && selected.value===triggerValue;
+  input.classList.toggle('hidden',!show);
+  if(!show) input.value='';
+  if(show) input.focus();
+}
+
+document.getElementById('f').addEventListener('change',e=>{
+  if(e.target.name==='area') toggleOtherField('area','Otra','areaOtraTxt');
+  if(e.target.name==='carga') toggleOtherField('carga','Otra','cargaOtraTxt');
+  if(e.target.name==='bono') toggleOtherField('bono','Otro','bonoOtroTxt');
+
+  if(e.target.name==='tipo'){
+    const isReplacement=e.target.value==='Reemplazo' && e.target.checked;
+    $('reemplazoNotice').classList.toggle('hidden',!isReplacement);
+  }
+});
+
+$('f').addEventListener('reset',()=>setTimeout(()=>{
+  $('compOtraTxt').classList.add('hidden');
+  $('areaOtraTxt').classList.add('hidden');
+  $('cargaOtraTxt').classList.add('hidden');
+  $('bonoOtroTxt').classList.add('hidden');
+  $('reemplazoNotice').classList.add('hidden');
+},0));
 
 // --- lectura de valores ---
 const val=key=>{
   const chips=document.querySelectorAll(`input[name="${key}"]`);
   if(chips.length){
-    const v=[...chips].filter(c=>c.checked).map(c=>c.value);
-    if(key==='competencias' && $('compOtra').checked){ const t=$('compOtraTxt').value.trim(); if(t) v.push(t); }
+    let v=[...chips].filter(c=>c.checked).map(c=>c.value);
+
+    if(key==='competencias' && $('compOtra').checked){
+      const t=$('compOtraTxt').value.trim();
+      if(t) v.push(t);
+    }
+
+    if(key==='area' && v[0]==='Otra'){
+      const t=$('areaOtraTxt').value.trim();
+      return t?[t]:[];
+    }
+
+    if(key==='carga' && v[0]==='Otra'){
+      const t=$('cargaOtraTxt').value.trim();
+      return t?[t+' horas']:[];
+    }
+
+    if(key==='bono' && v[0]==='Otro'){
+      const t=$('bonoOtroTxt').value.trim();
+      return t?[t]:[];
+    }
+
     return v;
   }
   const el=$(key); return el?[el.value.trim()].filter(Boolean):[];
@@ -385,7 +440,7 @@ $('f').addEventListener('submit',async e=>{
     horario:$('horario').value.trim(),
     descanso:$('descanso').value.trim(),
     sueldo_100:isNaN(sueldo)?null:sueldo,
-    bono:$('bono').value.trim(),
+    bono:one('bono'),
     prestaciones:$('prestaciones').value.trim(),
     funciones:$('funciones').value.trim(),
     autorizacion:$('autorizacion').value.trim()||null,
