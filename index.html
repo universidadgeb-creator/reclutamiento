@@ -46,6 +46,7 @@ main{padding:18px 14px 40px;max-width:1600px;margin:auto}
 .period-month:hover{background:#F7F5EF}
 .period-month input{margin:0;accent-color:#145c45}
 .period-separator{height:1px;background:var(--line);margin:12px 0}
+.period-range-wrap.hidden-range{display:none}
 .period-range{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .period-range label{display:block;font-size:9px!important;margin-bottom:3px!important}
 .period-range input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px;font:inherit;font-size:11px}
@@ -244,18 +245,22 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
       <label>Periodo</label>
       <button type="button" class="period-toggle" id="periodToggle">Acumulado 2026</button>
       <div class="period-menu" id="periodMenu">
-        <div class="period-menu-title">Seleccionar meses</div>
+        <div class="period-menu-title">Seleccionar uno o varios meses</div>
         <div class="period-months" id="periodMonths"></div>
-        <div class="period-separator"></div>
-        <div class="period-menu-title">Rango personalizado</div>
-        <div class="period-range">
-          <div><label for="periodStart">Desde</label><input type="date" id="periodStart" min="2026-01-01" max="2026-12-31"></div>
-          <div><label for="periodEnd">Hasta</label><input type="date" id="periodEnd" min="2026-01-01" max="2026-12-31"></div>
+
+        <div class="period-range-wrap" id="periodRangeWrap">
+          <div class="period-separator"></div>
+          <div class="period-menu-title">O seleccionar fechas específicas</div>
+          <div class="period-range">
+            <div><label for="periodStart">Desde</label><input type="date" id="periodStart" min="2026-01-01" max="2026-12-31"></div>
+            <div><label for="periodEnd">Hasta</label><input type="date" id="periodEnd" min="2026-01-01" max="2026-12-31"></div>
+          </div>
+          <div class="period-mode-note">El calendario solo se usa cuando no hay ningún mes seleccionado.</div>
         </div>
-        <div class="period-mode-note">El rango personalizado reemplaza temporalmente la selección de meses.</div>
+
         <div class="period-actions">
           <button type="button" id="periodAll">Acumulado 2026</button>
-          <div style="display:flex;gap:6px"><button type="button" id="periodClear">Limpiar</button><button type="button" class="primary-mini" id="periodApplyRange">Aplicar rango</button></div>
+          <button type="button" class="primary-mini" id="periodApplyRange">Aplicar fechas</button>
         </div>
       </div>
     </div>
@@ -942,6 +947,38 @@ async function dbUpdateHire(id,patch){
 }
 
 
+async function syncCoveredVacancyToHire(vacancyId,vacancyRecord){
+  if(!vacancyId || vacancyRecord.estatus!=='CUBIERTA') return;
+
+  const linked=hiresData.find(h=>String(h.vacanteId)===String(vacancyId));
+
+  const record={
+    vacanteId:String(vacancyId),
+    ingreso:vacancyRecord.ingreso||'',
+    vacante:vacancyRecord.vacante||'',
+    unidad:vacancyRecord.unidad||'',
+    sucursal:vacancyRecord.sucursal||'',
+    area:vacancyRecord.area||'',
+    reclutador:vacancyRecord.reclutador||'',
+    ingresoFecha:vacancyRecord.ingresoFecha||'',
+    bajaFecha:linked?.bajaFecha||'',
+    motivoBaja:linked?.motivoBaja||'',
+    fuente:linked?.fuente||'',
+    foto:linked?.foto||'',
+    origen:'CON VACANTE',
+    comentarios:linked?.comentarios||''
+  };
+
+  if(linked){
+    // Mantener la información propia de la contratación (fuente, baja, foto, comentarios)
+    // y sincronizar desde la vacante los datos operativos de cobertura.
+    await dbUpdateHire(linked.id,hireToDb(record));
+  }else{
+    await dbInsertHire(record);
+  }
+}
+
+
 async function dbDeleteVacancy(id){
   const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026?id=eq.${encodeURIComponent(id)}`,{
     method:'DELETE',
@@ -1109,17 +1146,29 @@ function statusForSelectedPeriod(r){
   const bounds=selectedMonthBounds();
   if(!bounds) return r.estatus;
 
+  const solicitud=d(r.solicitud);
   const cancel=d(r.cancelacionFecha);
-  if(cancel && cancel<=bounds.end) return 'CANCELADA';
-
   const ingreso=d(r.ingresoFecha);
-  if(ingreso && ingreso<=bounds.end) return 'CUBIERTA';
-
   const pause=d(r.pausaFecha);
   const react=d(r.reactivacionFecha);
+
+  // Si conocemos la fecha del evento, reconstruimos el estatus histórico.
+  if(cancel && cancel<=bounds.end) return 'CANCELADA';
+  if(ingreso){
+    if(ingreso<=bounds.end) return 'CUBIERTA';
+    // Si se cubrió después del corte, todavía estaba activa en ese corte.
+    if(!solicitud || solicitud<=bounds.end) return 'ACTIVA';
+  }
   if(pause && pause<=bounds.end && (!react || react>bounds.end)) return 'EN PAUSA';
 
-  return 'ACTIVA';
+  // IMPORTANTE: si falta la fecha histórica, NO asumir ACTIVA.
+  // Conservamos el estatus actual para evitar que CUBIERTAS sin fecha de ingreso,
+  // CANCELADAS sin fecha de cancelación o POR ASIGNAR inflen Vacantes activas.
+  if(r.estatus==='CUBIERTA') return 'CUBIERTA';
+  if(r.estatus==='CANCELADA') return 'CANCELADA';
+  if(r.estatus==='EN PAUSA') return 'EN PAUSA';
+  if(r.estatus==='POR ASIGNAR') return 'POR ASIGNAR';
+  return r.estatus==='ACTIVA' ? 'ACTIVA' : (r.estatus||'');
 }
 function slaClass(n){ if(n==null)return 'gray'; return n<30?'green':n<45?'yellow':'red'; }
 function slaText(n){ if(n==null)return 'SIN FECHA'; return n<30?'EN TIEMPO':n<45?'EN RIESGO':'FUERA DE SLA'; }
@@ -1152,53 +1201,70 @@ function baseVacStatusBadge(r){
 
 
 function monthIndex(s){ const x=d(s); return x?x.getMonth():null; }
+
 function periodWindows(){
-  if(periodState.mode==='range'&&periodState.start&&periodState.end){
-    const start=d(periodState.start),end=d(periodState.end); if(start&&end) return [{start,end}];
+  if(periodState.mode==='range' && periodState.start && periodState.end){
+    const start=d(periodState.start), end=d(periodState.end);
+    return (start&&end)?[{start,end}]:[];
   }
-  if(periodState.mode==='months'&&periodState.months.size){
-    return [...periodState.months].sort((a,b)=>a-b).map(m=>({start:new Date(2026,m,1,12,0,0),end:new Date(2026,m+1,0,12,0,0)}));
+  if(periodState.mode==='months' && periodState.months.size){
+    return [...periodState.months].sort((a,b)=>a-b).map(m=>({
+      start:new Date(2026,m,1,12,0,0),
+      end:new Date(2026,m+1,0,12,0,0)
+    }));
   }
   return [];
 }
-function periodHasFilter(){return periodWindows().length>0;}
 function periodDateMatches(value){
-  if(!periodHasFilter()) return true;
+  const windows=periodWindows();
+  if(!windows.length) return true;
   const x=d(value); if(!x) return false;
-  return periodWindows().some(w=>x>=w.start&&x<=w.end);
+  return windows.some(w=>x>=w.start&&x<=w.end);
 }
-function periodPredicate(r,dateField='solicitud'){return periodDateMatches(r[dateField]);}
+function periodPredicate(r,dateField='solicitud'){ return periodDateMatches(r[dateField]); }
+
 function selectedMonthBounds(){
-  const windows=periodWindows(); if(!windows.length) return null;
+  const windows=periodWindows();
+  if(!windows.length) return null;
   const sorted=[...windows].sort((a,b)=>a.start-b.start);
   return {start:sorted[0].start,end:sorted[sorted.length-1].end,windows:sorted};
 }
-function selectedPeriodContainsDate(value){return periodDateMatches(value);}
-function updatePeriodLabel(){
-  const btn=document.getElementById('periodToggle'); if(!btn) return;
-  if(periodState.mode==='range'&&periodState.start&&periodState.end){btn.textContent=`${fmtDate(periodState.start)} – ${fmtDate(periodState.end)}`;btn.title='Rango personalizado';return;}
-  if(periodState.mode==='months'&&periodState.months.size){
+function selectedPeriodContainsDate(value){ return periodDateMatches(value); }
+
+function updatePeriodUi(){
+  const btn=document.getElementById('periodToggle');
+  const rangeWrap=document.getElementById('periodRangeWrap');
+  const apply=document.getElementById('periodApplyRange');
+  const hasMonths=periodState.months.size>0;
+
+  if(rangeWrap) rangeWrap.classList.toggle('hidden-range',hasMonths);
+  if(apply) apply.style.display=hasMonths?'none':'inline-block';
+
+  if(periodState.mode==='range'&&periodState.start&&periodState.end){
+    btn.textContent=`${fmtDate(periodState.start)} – ${fmtDate(periodState.end)}`;
+  }else if(hasMonths){
     const ms=[...periodState.months].sort((a,b)=>a-b);
     if(ms.length===1) btn.textContent=`${MONTHS[ms[0]][0]+MONTHS[ms[0]].slice(1).toLowerCase()} 2026`;
     else if(ms.length<=3) btn.textContent=ms.map(i=>MONTH_SHORT[i]).join(' + ')+' 2026';
     else btn.textContent=`${ms.length} meses seleccionados`;
-    btn.title=ms.map(i=>MONTHS[i]).join(', ');return;
+  }else{
+    btn.textContent='Acumulado 2026';
   }
-  btn.textContent='Acumulado 2026';btn.title='Todo 2026';
 }
 function renderPeriodMonths(){
   const box=document.getElementById('periodMonths'); if(!box) return;
-  box.innerHTML=MONTHS.map((m,i)=>`<label class="period-month"><input type="checkbox" data-period-month="${i}" ${periodState.mode==='months'&&periodState.months.has(i)?'checked':''}><span>${m[0]+m.slice(1).toLowerCase()}</span></label>`).join('');
+  box.innerHTML=MONTHS.map((m,i)=>`<label class="period-month">
+    <input type="checkbox" data-period-month="${i}" ${periodState.months.has(i)?'checked':''}>
+    <span>${m[0]+m.slice(1).toLowerCase()}</span>
+  </label>`).join('');
+  updatePeriodUi();
 }
-function applyMonthSelection(){
-  periodState.start='';periodState.end='';periodState.mode=periodState.months.size?'months':'all';
-  document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';
-  updatePeriodLabel();renderAll();
+function setSingleMonthPeriod(mi){
+  periodState.months.clear(); periodState.months.add(Number(mi));
+  periodState.mode='months'; periodState.start=''; periodState.end='';
+  renderPeriodMonths(); renderAll();
 }
-function setSingleMonthPeriod(monthIndexValue){
-  periodState.months.clear();periodState.months.add(Number(monthIndexValue));periodState.mode='months';periodState.start='';periodState.end='';
-  renderPeriodMonths();updatePeriodLabel();renderAll();
-}
+
 function filteredIgnoringPeriod(){
   return data.filter(r=>
     multiMatches('unidad',r.unidad) &&
@@ -1221,6 +1287,9 @@ function activeVacanciesForSelectedPeriod(){
     if(!multiMatches('reclutador',r.reclutador)) return false;
 
     if(!bounds) return r.estatus==='ACTIVA';
+
+    // Las requisiciones POR ASIGNAR todavía no son una vacante activa de reclutamiento.
+    if(r.estatus==='POR ASIGNAR') return false;
 
     const solicitud=d(r.solicitud);
     if(!solicitud || solicitud>bounds.end) return false;
@@ -1374,7 +1443,6 @@ function updateMultiLabel(key){
 
 function setupFilters(){
   renderPeriodMonths();
-  updatePeriodLabel();
   const cats=getCatalogs();
   renderMultiSelect('unidad',cats.unidades||distinct('unidad'));
   renderMultiSelect('sucursal',cats.sucursales||distinct('sucursal'));
@@ -2279,6 +2347,10 @@ async function saveVacancyFromForm(){
     alert('Para marcar una vacante como CUBIERTA debes indicar la fecha de ingreso.');
     return false;
   }
+  if(estatus==='CUBIERTA' && !ingresoNombre){
+    alert('Para marcar una vacante como CUBIERTA debes indicar el nombre de la persona contratada.');
+    return false;
+  }
   if(estatus==='CANCELADA' && !cancelacionFecha){
     alert('Para marcar una vacante como CANCELADA debes indicar la fecha de cancelación.');
     return false;
@@ -2347,20 +2419,35 @@ async function saveVacancyFromForm(){
   };
 
   try{
+    let savedVacancyId=editingVacancyId;
+
     if(editingVacancyId){
       const current=data.find(x=>x.id===editingVacancyId)||editingSol;
-      const patch=vacancyToDb({...current,...payload});
+      const merged={...current,...payload};
+      const patch=vacancyToDb(merged);
       if(editingSol){ delete patch.codigo_vacante; patch.reclutador=reclutador?patch.reclutador:null; }
       await dbUpdateVacancy(editingVacancyId,patch);
+
+      // Si al guardar queda CUBIERTA, crear o actualizar automáticamente
+      // la contratación vinculada mediante vacante_id.
+      if(estatus==='CUBIERTA'){
+        await syncCoveredVacancyToHire(editingVacancyId,merged);
+      }
     }else{
-      await dbInsertVacancy(payload);
+      const created=await dbInsertVacancy(payload);
+      savedVacancyId=created?.id==null?'':String(created.id);
+
+      if(estatus==='CUBIERTA' && savedVacancyId){
+        await syncCoveredVacancyToHire(savedVacancyId,payload);
+      }
     }
+
     closeVacancyModal();
     await loadVacancies();
     return true;
   }catch(err){
     console.error(err);
-    alert('No se pudo guardar la vacante en Supabase.');
+    alert('No se pudo completar la actualización en Supabase.\n\nDetalle: '+(err?.message||err));
     return false;
   }
 }
@@ -2454,7 +2541,7 @@ function openTotalVacanciesDetail(){
     const solicitud=d(r.solicitud);
     if(!solicitud) return false;
     if(!bounds) return solicitud.getFullYear()===2026;
-    return selectedPeriodContainsDate(r.solicitud);
+    return solicitud>=bounds.start && solicitud<=bounds.end;
   });
 
   const rowHtml=(r)=>`
@@ -2607,23 +2694,40 @@ function renderAll(){
   renderKPIs();renderGauges();renderAlerts();renderRecruitmentTrend();renderMatrix();renderVacOps();renderVacTable();renderEffectiveness();
   const activeBase=document.querySelector('.subtab.active')?.dataset.base||'vac'; renderBase(activeBase);
 }
+
 document.getElementById('periodToggle').addEventListener('click',e=>{
-  e.stopPropagation();document.getElementById('periodFilter').classList.toggle('open');document.querySelectorAll('.multi-select.open').forEach(x=>x.classList.remove('open'));
+  e.stopPropagation();
+  document.getElementById('periodFilter').classList.toggle('open');
 });
 document.getElementById('periodMonths').addEventListener('change',e=>{
-  const cb=e.target.closest('[data-period-month]');if(!cb)return;const m=Number(cb.dataset.periodMonth);if(cb.checked)periodState.months.add(m);else periodState.months.delete(m);applyMonthSelection();
+  const cb=e.target.closest('[data-period-month]'); if(!cb) return;
+  const mi=Number(cb.dataset.periodMonth);
+  if(cb.checked) periodState.months.add(mi); else periodState.months.delete(mi);
+  periodState.start=''; periodState.end='';
+  periodState.mode=periodState.months.size?'months':'all';
+  document.getElementById('periodStart').value='';
+  document.getElementById('periodEnd').value='';
+  updatePeriodUi();
+  renderAll();
 });
 document.getElementById('periodApplyRange').addEventListener('click',()=>{
-  const start=document.getElementById('periodStart').value,end=document.getElementById('periodEnd').value;
-  if(!start||!end){alert('Selecciona una fecha de inicio y una fecha final.');return;}
+  if(periodState.months.size) return;
+  const start=document.getElementById('periodStart').value;
+  const end=document.getElementById('periodEnd').value;
+  if(!start||!end){alert('Selecciona fecha de inicio y fecha final.');return;}
   if(end<start){alert('La fecha final no puede ser anterior a la fecha inicial.');return;}
-  periodState.start=start;periodState.end=end;periodState.months.clear();periodState.mode='range';renderPeriodMonths();updatePeriodLabel();document.getElementById('periodFilter').classList.remove('open');renderAll();
+  periodState.start=start; periodState.end=end; periodState.mode='range';
+  updatePeriodUi();
+  document.getElementById('periodFilter').classList.remove('open');
+  renderAll();
 });
 document.getElementById('periodAll').addEventListener('click',()=>{
-  periodState.months.clear();periodState.start='';periodState.end='';periodState.mode='all';document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';renderPeriodMonths();updatePeriodLabel();document.getElementById('periodFilter').classList.remove('open');renderAll();
-});
-document.getElementById('periodClear').addEventListener('click',()=>{
-  periodState.months.clear();periodState.start='';periodState.end='';periodState.mode='all';document.getElementById('periodStart').value='';document.getElementById('periodEnd').value='';renderPeriodMonths();updatePeriodLabel();renderAll();
+  periodState.months.clear(); periodState.start=''; periodState.end=''; periodState.mode='all';
+  document.getElementById('periodStart').value='';
+  document.getElementById('periodEnd').value='';
+  renderPeriodMonths();
+  document.getElementById('periodFilter').classList.remove('open');
+  renderAll();
 });
 
 document.addEventListener('click',e=>{
