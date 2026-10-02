@@ -739,6 +739,25 @@ function supabaseHeaders(useAuth=false){
 }
 
 
+
+function normalizeAreaName(value){
+  const raw=String(value||'').trim().replace(/\s+/g,' ');
+  const key=raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase();
+
+  const aliases={
+    'ORDEN Y LIMPIEZA':'ORDEN Y LIMPIEZA',
+    'ORDEN & LIMPIEZA':'ORDEN Y LIMPIEZA',
+    'RECEPCION':'RECEPCIÓN',
+    'ADMINISTRACION':'ADMINISTRACIÓN',
+    'ACUATICA':'ACUÁTICA'
+  };
+
+  return aliases[key] || raw.toUpperCase();
+}
+
 function normalizeRecruiterName(value){
   const raw=(value||'').toString().trim().replace(/\s+/g,' ');
   if(!raw) return '';
@@ -1611,7 +1630,11 @@ function globalHireFiltered(){
 
 function distinct(k){
   const vals=[...data.map(x=>x[k]),...hiresData.map(x=>x[k])].filter(Boolean);
-  const cleanVals=k==='reclutador'?vals.map(normalizeRecruiterName):vals;
+  const cleanVals=k==='reclutador'
+    ?vals.map(normalizeRecruiterName)
+    :k==='area'
+      ?vals.map(normalizeAreaName)
+      :vals;
   return [...new Set(cleanVals)].sort((a,b)=>a.localeCompare(b,'es'));
 }
 function fillSelect(id, values, label){
@@ -1637,12 +1660,23 @@ function multiValues(key){
 
 function multiMatches(key,value){
   const vals=selectedFilters[key];
-  return vals.size===0 || vals.has(value);
+  if(vals.size===0) return true;
+  if(key==='area') return vals.has(normalizeAreaName(value));
+  if(key==='reclutador') return vals.has(normalizeRecruiterName(value));
+  return vals.has(value);
 }
 
 function renderMultiSelect(key, values){
   const menu=document.getElementById(`${key}Menu`);
   if(!menu) return;
+
+  if(key==='area'){
+    values=[...new Set((values||[]).map(normalizeAreaName).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,'es'));
+  }else if(key==='reclutador'){
+    values=[...new Set((values||[]).map(normalizeRecruiterName).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,'es'));
+  }
 
   const selected=selectedFilters[key];
   const valid=new Set(values);
