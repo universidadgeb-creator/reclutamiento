@@ -3131,6 +3131,101 @@ function openHiresList(rows,title){
   document.getElementById('drawerWrap').classList.add('open');
 }
 
+
+function statusAtTrendWindow(r,mi){
+  const {start,end}=trendMonthWindow(mi);
+  const sol=d(r.solicitud);
+  if(!sol || sol>end) return '';
+
+  const ingreso=d(r.ingresoFecha);
+  const cancel=d(r.cancelacionFecha);
+  const pause=d(r.pausaFecha);
+  const react=d(r.reactivacionFecha);
+
+  if(cancel && cancel<=end) return 'CANCELADA';
+  if(ingreso && ingreso<=end) return 'CUBIERTA';
+  if(pause && pause<=end && (!react || react>end)) return 'EN PAUSA';
+
+  // Si el registro histórico está cerrado pero no existe fecha de cierre,
+  // no inventamos cuándo ocurrió. Solo usamos su estatus actual.
+  if(r.estatus==='CUBIERTA' && !ingreso) return 'CUBIERTA';
+  if(r.estatus==='CANCELADA' && !cancel) return 'CANCELADA';
+
+  return 'ACTIVA';
+}
+
+function coverageDaysAtTrendWindow(r,mi){
+  const {end}=trendMonthWindow(mi);
+  const st=statusAtTrendWindow(r,mi);
+
+  if(st==='CUBIERTA' && r.ingresoFecha){
+    return pauseAdjustedDays(r,r.ingresoFecha);
+  }
+  if(st==='CANCELADA' && r.cancelacionFecha){
+    return pauseAdjustedDays(r,r.cancelacionFecha);
+  }
+  if(st==='ACTIVA' || st==='EN PAUSA'){
+    return pauseAdjustedDays(r,end.toISOString().slice(0,10));
+  }
+  return null;
+}
+
+function openTrendList(rows,title,mi,type){
+  const sorted=[...rows].sort((a,b)=>
+    (coverageDaysAtTrendWindow(b,mi)||0)-(coverageDaysAtTrendWindow(a,mi)||0)
+  );
+  const month=MONTHS[mi][0]+MONTHS[mi].slice(1).toLowerCase();
+
+  document.getElementById('drawerContent').innerHTML=`
+    <div class="small">DETALLE HISTÓRICO DE VACANTES</div>
+    <h3>${title}</h3>
+    <div class="small" style="margin-bottom:14px">
+      ${sorted.length} vacante(s) · El estatus mostrado corresponde a ${month} 2026, no al estatus actual.
+    </div>
+    ${type==='total'?`
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+        <span class="badge yellow">ACTIVAS: ${sorted.filter(r=>statusAtTrendWindow(r,mi)==='ACTIVA').length}</span>
+        <span class="badge green">CUBIERTAS: ${sorted.filter(r=>statusAtTrendWindow(r,mi)==='CUBIERTA').length}</span>
+        <span class="badge blue">EN PAUSA: ${sorted.filter(r=>statusAtTrendWindow(r,mi)==='EN PAUSA').length}</span>
+        <span class="badge gray">CANCELADAS: ${sorted.filter(r=>statusAtTrendWindow(r,mi)==='CANCELADA').length}</span>
+      </div>`:''}
+    ${sorted.length?`
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Vacante</th>
+              <th>Días al corte</th>
+              <th>Unidad de negocio</th>
+              <th>Sucursal</th>
+              <th>Área</th>
+              <th>Reclutador</th>
+              <th>Estatus en ${MONTH_SHORT[mi]}</th>
+              <th>Fecha contratación</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(r=>{
+              const n=coverageDaysAtTrendWindow(r,mi);
+              return `
+              <tr class="clickable" onclick="openDrawer(data.find(x=>x.id==='${r.id}'))">
+                <td><b>${r.vacante||'—'}</b></td>
+                <td><span class="badge ${slaClass(n)}">${n??'—'}</span></td>
+                <td>${r.unidad||'—'}</td>
+                <td>${r.sucursal||'—'}</td>
+                <td>${r.area||'—'}</td>
+                <td>${r.reclutador||'—'}</td>
+                <td>${statusBadge(statusAtTrendWindow(r,mi))}</td>
+                <td>${fmtDate(r.ingresoFecha)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`:'<div class="empty">Sin registros.</div>'}`;
+
+  document.getElementById('drawerWrap').classList.add('open');
+}
+
 function openList(rows,title){
   const sorted=[...rows].sort((a,b)=>(coverageDays(b)||0)-(coverageDays(a)||0));
   document.getElementById('drawerContent').innerHTML=`
@@ -3327,7 +3422,7 @@ document.addEventListener('click',e=>{
         :type==='late'
           ?`${unit} · ${month} · Cubiertas fuera de SLA`
           :`${unit} · ${month} · Sin cubrir durante el periodo`;
-    openList(rows,title);
+    openTrendList(rows,title,mi,type);
     return;
   }
 
