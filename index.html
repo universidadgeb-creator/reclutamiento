@@ -497,7 +497,12 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
             </select>
           </div>
           <div class="form-group full"><label>Nombre completo <span class="req">*</span></label><input class="form-control" id="nhNombre" type="text" required></div>
-          <div class="form-group"><label>Rol / puesto <span class="req">*</span></label><select class="form-control" id="nhRol" required></select></div>
+          <div class="form-group">
+            <label>Rol / puesto <span class="req">*</span></label>
+            <input class="form-control" id="nhRol" list="nhRolList" placeholder="Selecciona o escribe un rol" autocomplete="off" required>
+            <datalist id="nhRolList"></datalist>
+            <div class="small">Si el rol no existe en el catálogo, puedes escribirlo manualmente.</div>
+          </div>
           <div class="form-group"><label>Unidad de negocio <span class="req">*</span></label><select class="form-control" id="nhUnidad" required></select></div>
           <div class="form-group"><label>Sucursal <span class="req">*</span></label><select class="form-control" id="nhSucursal" required></select></div>
           <div class="form-group"><label>Área</label><select class="form-control" id="nhArea"></select></div>
@@ -2445,7 +2450,10 @@ function populateHireFormCatalogs(){
     const el=document.getElementById(id); if(!el) return;
     el.innerHTML=`<option value="">${placeholder}</option>`+(values||[]).map(v=>`<option value="${v}">${v}</option>`).join('');
   };
-  setOptions('nhRol',cats.vacantes||[],'Selecciona un rol');
+  const roleList=document.getElementById('nhRolList');
+  if(roleList){
+    roleList.innerHTML=(cats.vacantes||[]).map(v=>`<option value="${v}"></option>`).join('');
+  }
   setOptions('nhUnidad',cats.unidades||[],'Selecciona una unidad');
   setOptions('nhSucursal',cats.sucursales||[],'Selecciona una sucursal');
   setOptions('nhArea',cats.areas||[],'Selecciona un área');
