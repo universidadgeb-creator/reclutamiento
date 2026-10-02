@@ -741,22 +741,49 @@ function supabaseHeaders(useAuth=false){
 
 
 function normalizeAreaName(value){
-  const raw=String(value||'').trim().replace(/\s+/g,' ');
+  const raw=String(value||'')
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')   // caracteres invisibles
+    .replace(/\u00A0/g,' ')                // espacio no separable
+    .trim()
+    .replace(/\s+/g,' ');
+
   const key=raw
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g,'')
+    .replace(/&/g,' Y ')
+    .replace(/[^A-Z0-9Ñ]+/gi,' ')
+    .trim()
+    .replace(/\s+/g,' ')
     .toUpperCase();
 
   const aliases={
     'ORDEN Y LIMPIEZA':'ORDEN Y LIMPIEZA',
-    'ORDEN & LIMPIEZA':'ORDEN Y LIMPIEZA',
+    'ORDEN LIMPIEZA':'ORDEN Y LIMPIEZA',
+    'ORDEN Y LIMPIESA':'ORDEN Y LIMPIEZA',
+    'O Y L':'ORDEN Y LIMPIEZA',
+    'OYL':'ORDEN Y LIMPIEZA',
+
     'RECEPCION':'RECEPCIÓN',
     'ADMINISTRACION':'ADMINISTRACIÓN',
-    'ACUATICA':'ACUÁTICA'
+    'ACUATICA':'ACUÁTICA',
+    'CAPITAL HUMANO':'CAPITAL HUMANO',
+    'MANTENIMIENTO':'MANTENIMIENTO',
+    'MARKETING':'MARKETING',
+    'DEPORTES':'DEPORTES',
+    'KIDS':'KIDS',
+    'COMERCIAL':'COMERCIAL',
+    'SISTEMAS':'SISTEMAS',
+    'CONTABILIDAD':'CONTABILIDAD',
+    'FINANZAS':'FINANZAS',
+    'COMPRAS':'COMPRAS',
+    'VENTAS':'VENTAS',
+    'RESTAURANTE':'RESTAURANTE',
+    'RESTAURANTE Y SERVICIO':'RESTAURANTE Y SERVICIO'
   };
 
-  return aliases[key] || raw.toUpperCase();
+  return aliases[key] || key;
 }
+
 
 function normalizeRecruiterName(value){
   const raw=(value||'').toString().trim().replace(/\s+/g,' ');
@@ -1718,7 +1745,7 @@ function setupFilters(){
   const cats=getCatalogs();
   renderMultiSelect('unidad',cats.unidades||distinct('unidad'));
   renderMultiSelect('sucursal',cats.sucursales||distinct('sucursal'));
-  renderMultiSelect('area',cats.areas||distinct('area'));
+  renderMultiSelect('area',[...(cats.areas||[]),...distinct('area')]);
   renderMultiSelect('reclutador',cats.reclutadores||distinct('reclutador'));
 }
 function dataQualityIssues(){
@@ -2420,7 +2447,7 @@ function renderCatalogManager(box=document.getElementById('baseContent')){
       <div class="catalog-list">
         ${(cats[key]||[]).map((item,idx)=>`
           <div class="catalog-item">
-            <span>${item}</span>
+            <span>${key==='areas'?normalizeAreaName(item):item}</span>
             ${canEdit?`<div class="catalog-actions">
               <button class="icon-btn edit" onclick="editCatalogItem('${key}',${idx})">Editar</button>
               <button class="icon-btn delete" onclick="deleteCatalogItem('${key}',${idx})">Eliminar</button>
