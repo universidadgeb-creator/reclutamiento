@@ -99,15 +99,9 @@ main{padding:18px 14px 40px;max-width:1600px;margin:auto}
 .unit-months{display:grid;align-items:end;gap:6px;min-height:142px}
 .unit-month-col{display:grid;grid-template-rows:92px auto auto;align-items:end;min-width:0}
 .unit-bar-zone{height:92px;display:flex;align-items:flex-end;justify-content:center;position:relative;border-bottom:1px solid #E8E2DE}
-.unit-bar{width:min(34px,74%);border-radius:8px 8px 2px 2px;min-height:0;position:relative;transition:filter .15s;overflow:hidden;display:flex;flex-direction:column-reverse}
-.unit-bar:hover{filter:brightness(.97)}
-.unit-bar-seg{width:100%;min-height:0;cursor:pointer;position:relative}
-.unit-bar-seg.open{opacity:.42}
-.unit-bar-seg.ok{background:#18A672}
-.unit-bar-seg.late{background:#E5484D}
-.unit-bar-seg:hover{filter:brightness(.9)}
-.unit-bar-seg+.unit-bar-seg{box-shadow:inset 0 1px rgba(255,255,255,.55)}
-.unit-bar-value{position:absolute;left:50%;transform:translateX(-50%);top:-19px;font-size:10px;font-weight:900;color:#18242B;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;white-space:nowrap}
+.unit-bar{width:min(28px,66%);border-radius:7px 7px 2px 2px;min-height:0;position:relative;transition:filter .15s}
+.unit-bar:hover{filter:brightness(.93)}
+.unit-bar-value{position:absolute;left:50%;transform:translateX(-50%);top:-17px;font-size:10px;font-weight:900;color:#18242B;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
 .unit-month-label{text-align:center;font-size:9px;font-weight:800;color:#60707A;margin-top:5px}
 .unit-sla-row{display:flex;justify-content:center;gap:4px;min-height:17px;margin-top:3px;white-space:nowrap}
 .unit-sla-pill{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:16px;padding:0 4px;border-radius:999px;font-size:8px;font-weight:900;cursor:pointer}
@@ -344,7 +338,7 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
       <div class="section-head">
         <div>
           <h2>Tendencia de vacantes por unidad de negocio</h2>
-          <div class="small">Cada barra muestra el total de vacantes del mes: verde = cubiertas en SLA, rojo = cubiertas fuera de SLA y el color de la unidad = pendientes/sin cubrir.</div>
+          <div class="small">Vacantes asignadas por mes según los filtros activos. El periodo también limita los meses y fechas mostrados.</div>
           <div class="trend-sla-help">
             <span><i class="dot" style="background:#18A672"></i>✓ Coberturas dentro de SLA</span>
             <span><i class="dot" style="background:#E5484D"></i>! Coberturas fuera de SLA</span>
@@ -1902,17 +1896,12 @@ function renderRecruitmentTrend(){
         return n!=null && n>45;
       }).length;
 
-      const coveredTotal=inSla+outSla;
-      const open=Math.max(0,assigned.length-coveredTotal);
-
       return {
         mi,
         label:MONTH_SHORT[mi],
         total:assigned.length,
         inSla,
-        outSla,
-        coveredTotal,
-        open
+        outSla
       };
     });
 
@@ -1958,24 +1947,13 @@ function renderRecruitmentTrend(){
       <div class="unit-months" style="grid-template-columns:repeat(${cols},minmax(34px,1fr))">
         ${s.monthly.map(v=>{
           const h=v.total?Math.max(8,(v.total/maxVal)*82):0;
-          const openPct=v.total?(v.open/v.total)*100:0;
-          const okPct=v.total?(v.inSla/v.total)*100:0;
-          const latePct=v.total?(v.outSla/v.total)*100:0;
-
           return `<div class="unit-month-col">
             <div class="unit-bar-zone">
-              ${v.total?`<div class="unit-bar" style="height:${h}px" title="${s.unit} · ${v.label}: ${v.total} vacantes · ${v.coveredTotal} cubiertas · ${v.open} sin cubrir">
+              ${v.total?`<div class="unit-bar" style="height:${h}px;background:${s.color}" title="${s.unit} · ${v.label}: ${v.total} vacantes">
                 <span class="unit-bar-value" data-trend-detail="total" data-unit="${s.unit}" data-month="${v.mi}" title="Ver detalle de las ${v.total} vacantes">${v.total}</span>
-
-                ${v.open?`<div class="unit-bar-seg open" data-trend-detail="open" data-unit="${s.unit}" data-month="${v.mi}" style="height:${openPct}%;background:${s.color}" title="${v.open} sin cubrir"></div>`:''}
-                ${v.inSla?`<div class="unit-bar-seg ok" data-trend-detail="sla" data-unit="${s.unit}" data-month="${v.mi}" style="height:${okPct}%" title="${v.inSla} cubiertas dentro de SLA"></div>`:''}
-                ${v.outSla?`<div class="unit-bar-seg late" data-trend-detail="late" data-unit="${s.unit}" data-month="${v.mi}" style="height:${latePct}%" title="${v.outSla} cubiertas fuera de SLA"></div>`:''}
-
-                ${v.coveredTotal?`<span class="unit-covered-label">${v.coveredTotal}</span>`:''}
               </div>`:''}
             </div>
             <div class="unit-month-label">${v.label}</div>
-            <div class="unit-bar-caption">${v.total?`${v.coveredTotal} cubiertas`:''}</div>
             <div class="unit-sla-row">
               ${v.inSla?`<span class="unit-sla-pill ok" data-trend-detail="sla" data-unit="${s.unit}" data-month="${v.mi}" title="Ver ${v.inSla} cobertura(s) dentro de SLA">✓${v.inSla}</span>`:''}
               ${v.outSla?`<span class="unit-sla-pill late" data-trend-detail="late" data-unit="${s.unit}" data-month="${v.mi}" title="Ver ${v.outSla} cobertura(s) fuera de SLA">!${v.outSla}</span>`:''}
@@ -3561,5 +3539,3 @@ document.addEventListener('change',e=>{
 loadVacancies();
 </script>
 </body></html>
-.unit-covered-label{position:absolute;left:50%;transform:translateX(-50%);bottom:3px;font-size:7px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);pointer-events:none}
-.unit-bar-caption{text-align:center;font-size:8px;font-weight:800;color:#68757D;margin-top:2px;min-height:11px}
