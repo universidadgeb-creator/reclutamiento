@@ -78,18 +78,39 @@ main{padding:18px 14px 40px;max-width:1600px;margin:auto}
 .vac-op.metric-danger .label,.vac-op.metric-danger .value,.vac-op.metric-danger .sub{color:#C62828!important}
 .alert-row.metric-danger{border-left:4px solid #E5484D!important}
 .alert-row.metric-danger span,.alert-row.metric-danger strong{color:#C62828!important}
-.trend-chart{position:relative;height:300px;margin-top:8px;padding:14px 12px 8px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.trend-chart{position:relative;height:auto;min-height:300px;margin-top:8px;padding:14px 12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:visible}
 .trend-chart svg{width:100%;height:100%;display:block;overflow:visible}
 .trend-grid{stroke:#E9E3DE;stroke-width:1}
 .trend-axis{fill:#6A7780;font-size:10px;font-weight:700}
-.trend-line-total{fill:none;stroke:#8752E8;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.trend-line-active{fill:none;stroke:#F2B544;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.trend-line-covered-ok{fill:none;stroke:#18A672;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.trend-line-covered-late{fill:none;stroke:#E5484D;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.trend-point-total{fill:#8752E8;stroke:#fff;stroke-width:2}
-.trend-point-active{fill:#F2B544;stroke:#fff;stroke-width:2}
-.trend-point-covered-ok{fill:#18A672;stroke:#fff;stroke-width:2}
-.trend-point-covered-late{fill:#E5484D;stroke:#fff;stroke-width:2}
+.trend-unit-legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.trend-unit-legend span{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800}
+.trend-unit-line-swatch{width:18px;height:5px;border-radius:999px;display:inline-block}
+.trend-sla-help{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.trend-sla-help span{font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+
+.unit-trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.unit-trend-card{border:1px solid #E7DDD7;border-radius:14px;background:#FCFAF8;padding:14px 14px 11px;min-width:0}
+.unit-trend-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.unit-trend-name{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:900;text-transform:uppercase}
+.unit-trend-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.unit-trend-total{text-align:right}
+.unit-trend-total strong{display:block;font-size:20px;line-height:1;font-weight:900}
+.unit-trend-total span{font-size:9px;color:var(--muted)}
+.unit-months{display:grid;align-items:end;gap:6px;min-height:142px}
+.unit-month-col{display:grid;grid-template-rows:92px auto auto;align-items:end;min-width:0}
+.unit-bar-zone{height:92px;display:flex;align-items:flex-end;justify-content:center;position:relative;border-bottom:1px solid #E8E2DE}
+.unit-bar{width:min(28px,66%);border-radius:7px 7px 2px 2px;min-height:0;position:relative;transition:filter .15s}
+.unit-bar:hover{filter:brightness(.93)}
+.unit-bar-value{position:absolute;left:50%;transform:translateX(-50%);top:-17px;font-size:10px;font-weight:900;color:#18242B;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.unit-month-label{text-align:center;font-size:9px;font-weight:800;color:#60707A;margin-top:5px}
+.unit-sla-row{display:flex;justify-content:center;gap:4px;min-height:17px;margin-top:3px;white-space:nowrap}
+.unit-sla-pill{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:16px;padding:0 4px;border-radius:999px;font-size:8px;font-weight:900;cursor:pointer}
+.unit-sla-pill.ok{background:#DDF5EA;color:#08764E}
+.unit-sla-pill.late{background:#FDE2E2;color:#B4232A}
+.unit-sla-empty{font-size:8px;color:#A2A8AE}
+.unit-trend-empty{padding:28px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line);border-radius:12px}
+@media(max-width:1050px){.unit-trend-grid{grid-template-columns:1fr}}
+
 .trend-value{font-size:10px;font-weight:900;fill:#22323A}
 .trend-legend{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:11px;font-weight:800}
 .trend-legend span{display:flex;align-items:center;gap:6px}
@@ -315,18 +336,20 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
 
     <div class="card section" style="margin-bottom:14px">
       <div class="section-head">
-        <div><h2>Tendencia de reclutamiento</h2><div class="small">Vacantes totales, activas al cierre y coberturas dentro/fuera de SLA · enero a septiembre 2026</div></div>
-        <div class="trend-legend">
-          <span><i class="trend-swatch" style="background:#8752E8"></i>Vacantes totales</span>
-          <span><i class="trend-swatch" style="background:#F2B544"></i>Activas al cierre</span>
-          <span><i class="trend-swatch" style="background:#18A672"></i>Cubiertas en SLA</span>
-          <span><i class="trend-swatch" style="background:#E5484D"></i>Cubiertas fuera de SLA</span>
+        <div>
+          <h2>Tendencia de vacantes por unidad de negocio</h2>
+          <div class="small">Vacantes asignadas por mes según los filtros activos. El periodo también limita los meses y fechas mostrados.</div>
+          <div class="trend-sla-help">
+            <span><i class="dot" style="background:#18A672"></i>✓ Coberturas dentro de SLA</span>
+            <span><i class="dot" style="background:#E5484D"></i>! Coberturas fuera de SLA</span>
+          </div>
         </div>
+        <div class="trend-unit-legend" id="trendUnitLegend"></div>
       </div>
       <div class="trend-chart" id="recruitmentTrend"></div>
     </div>
 
-    <div class="card section" style="margin-bottom:14px">
+    <div class="card section" style="margin-top:14px;margin-bottom:14px;clear:both">
       <div class="section-head"><div><h2>Distribución de vacantes</h2><div class="small">Por área y unidad de negocio · clic en un número para ver detalle</div></div></div>
       <div class="table-wrap"><table class="matrix" id="matrix"></table></div>
     </div>
@@ -354,21 +377,37 @@ tr.clickable{cursor:pointer} tr.clickable:hover{background:#FBF7F0}
   </section>
 
   <section id="tab-efectividad" class="hidden">
+    <div class="card section" style="padding:14px 18px;margin-bottom:12px">
+      <div class="section-head" style="margin-bottom:0">
+        <div>
+          <h2 style="margin:0">Permanencia</h2>
+          <div class="small">Selecciona el horizonte con el que quieres medir la efectividad.</div>
+        </div>
+        <div class="filter" style="min-width:190px">
+          <label>Medición de permanencia</label>
+          <select id="effThreshold">
+            <option value="90">90 días</option>
+            <option value="180">180 días</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="kpis">
-      <div class="card kpi" style="--accent:#18A672"><div class="label">Efectividad +90</div><div class="value" id="eEfect">0%</div><div class="sub">Meta 80% · solo personas evaluables</div></div>
+      <div class="card kpi" style="--accent:#18A672"><div class="label" id="eEfectLabel">Efectividad +90</div><div class="value" id="eEfect">0%</div><div class="sub">Meta 80% · solo personas evaluables</div></div>
       <div class="card kpi" style="--accent:#1683B5"><div class="label">Ingresos</div><div class="value" id="eIngresos">0</div><div class="sub">Contrataciones del periodo</div></div>
-      <div class="card kpi" style="--accent:#E5484D"><div class="label">Bajas totales</div><div class="value" id="eBajas">0</div><div class="sub">Bajas -90 y +90 días</div></div>
-      <div class="card kpi" style="--accent:#E5484D"><div class="label">Bajas -90 días</div><div class="value" id="eBajas90">0</div><div class="sub">Afectan el indicador</div></div>
+      <div class="card kpi" style="--accent:#E5484D"><div class="label">Bajas totales</div><div class="value" id="eBajas">0</div><div class="sub" id="eBajasSub">Bajas -90 y +90 días</div></div>
+      <div class="card kpi" style="--accent:#E5484D"><div class="label" id="eBajasThresholdLabel">Bajas -90 días</div><div class="value" id="eBajas90">0</div><div class="sub">Afectan el indicador</div></div>
     </div>
 
     <div class="grid2">
       <div class="card section">
         <div class="section-head"><div><h2>Efectividad del reclutamiento</h2><div class="small">Evolución mensual de las contrataciones</div></div></div>
         <div class="legend" id="effLegend">
-          <button data-eff-status="ACTIVO +90"><i class="dot" style="background:#18A672"></i>Activo +90</button>
-          <button data-eff-status="BAJA -90"><i class="dot" style="background:#E5484D"></i>Baja -90</button>
-          <button data-eff-status="ACTIVO -90"><i class="dot" style="background:#F2B544"></i>Activo -90</button>
-          <button data-eff-status="BAJA +90"><i class="dot" style="background:#1683B5"></i>Baja +90</button>
+          <button id="effLegendActivePlus" data-eff-status="ACTIVO +90"><i class="dot" style="background:#18A672"></i>Activo +90</button>
+          <button id="effLegendLow" data-eff-status="BAJA -90"><i class="dot" style="background:#E5484D"></i>Baja -90</button>
+          <button id="effLegendActiveMinus" data-eff-status="ACTIVO -90"><i class="dot" style="background:#F2B544"></i>Activo -90</button>
+          <button id="effLegendBajaPlus" data-eff-status="BAJA +90"><i class="dot" style="background:#1683B5"></i>Baja +90</button>
         </div>
         <div class="eff-chart-wrap">
           <div class="y-axis" id="effYAxis"></div>
@@ -901,7 +940,7 @@ function updateAdminUi(){
   const baseTab=document.getElementById('baseTabBtn');
   if(baseTab) baseTab.style.display='inline-block';
 
-  document.querySelectorAll('[data-edit-vacancy],[data-delete-vacancy],[data-edit-hire],[data-base-add-hire]')
+  document.querySelectorAll('[data-edit-vacancy],[data-delete-vacancy],[data-edit-hire],[data-delete-hire],[data-base-add-hire]')
     .forEach(el=>el.style.display=logged?'inline-block':'none');
 }
 
@@ -947,10 +986,103 @@ async function dbUpdateHire(id,patch){
 }
 
 
+function normalizePersonName(name){
+  return String(name||'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .toUpperCase();
+}
+
+function hireCompletenessScore(r){
+  let n=0;
+  if(r.vacanteId) n+=8;
+  if(r.vacante) n+=3;
+  if(r.unidad) n+=2;
+  if(r.sucursal) n+=2;
+  if(r.area) n+=2;
+  if(r.reclutador) n+=1;
+  if(r.ingresoFecha) n+=4;
+  if(r.fuente) n+=2;
+  if(r.bajaFecha) n+=2;
+  if(r.motivoBaja) n+=1;
+  if(r.foto) n+=1;
+  if(r.comentarios) n+=1;
+  return n;
+}
+
+function dedupeHiresByName(rows){
+  const groups=new Map();
+
+  rows.forEach(r=>{
+    const key=normalizePersonName(r.ingreso);
+    if(!key) return;
+
+    if(!groups.has(key)){
+      groups.set(key,r);
+      return;
+    }
+
+    const current=groups.get(key);
+    const scoreCurrent=hireCompletenessScore(current);
+    const scoreCandidate=hireCompletenessScore(r);
+
+    // Preferir el registro más completo; en empate, el de ID más alto.
+    if(scoreCandidate>scoreCurrent ||
+      (scoreCandidate===scoreCurrent && Number(r.id||0)>Number(current.id||0))){
+      groups.set(key,r);
+    }
+  });
+
+  return [...groups.values()];
+}
+
+async function dbDeleteHire(id){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/contrataciones_2026?id=eq.${encodeURIComponent(id)}`,{
+    method:'DELETE',
+    headers:supabaseHeaders(true)
+  });
+  if(!res.ok) throw new Error(await res.text());
+}
+
+async function deleteHire(id){
+  if(!accessToken){
+    alert('Inicia sesión como administrador para eliminar contrataciones.');
+    return;
+  }
+
+  const r=hiresData.find(x=>String(x.id)===String(id));
+  if(!r) return;
+
+  const sameName=hiresData.filter(x=>
+    normalizePersonName(x.ingreso)===normalizePersonName(r.ingreso)
+  );
+
+  const duplicateNote=sameName.length>1
+    ?`\n\nDetecté ${sameName.length} registros con este mismo nombre. Solo se eliminará este registro (ID ${r.id}).`
+    :'';
+
+  if(!confirm(`¿Eliminar la contratación de ${r.ingreso}?${duplicateNote}\n\nEsta acción no elimina la vacante relacionada.`)) return;
+
+  try{
+    await dbDeleteHire(id);
+    await loadVacancies();
+  }catch(err){
+    console.error(err);
+    alert('No se pudo eliminar la contratación de Supabase.\n\nDetalle: '+(err?.message||err));
+  }
+}
+
+
 async function syncCoveredVacancyToHire(vacancyId,vacancyRecord){
   if(!vacancyId || vacancyRecord.estatus!=='CUBIERTA') return;
 
-  const linked=hiresData.find(h=>String(h.vacanteId)===String(vacancyId));
+  const linkedByVacancy=hiresData.find(h=>String(h.vacanteId)===String(vacancyId));
+  const linkedByName=hiresData.find(h=>
+    normalizePersonName(h.ingreso)===normalizePersonName(vacancyRecord.ingreso)
+  );
+  const linked=linkedByVacancy||linkedByName;
 
   const record={
     vacanteId:String(vacancyId),
@@ -1090,12 +1222,60 @@ function driveImg(url){
 }
 
 function personPhotoStyle(){return 'object-fit:cover;object-position:center center;transform:none;padding:0;background:#ECEBE8';}
-function tenureStatus(r){
+function tenureStatus(r,threshold=90){
   if(!r.ingresoFecha) return '';
-  const end=r.bajaFecha||'2026-09-11';
+  const end=r.bajaFecha||todayISO();
   const n=days(r.ingresoFecha,end);
-  if(r.bajaFecha) return n>=90?'BAJA +90':'BAJA -90';
-  return n>=90?'ACTIVO +90':'ACTIVO -90';
+  if(r.bajaFecha) return n>=threshold?`BAJA +${threshold}`:`BAJA -${threshold}`;
+  return n>=threshold?`ACTIVO +${threshold}`:`ACTIVO -${threshold}`;
+}
+
+function effectivenessThreshold(){
+  return Number(document.getElementById('effThreshold')?.value||90);
+}
+
+function effectivenessStatus(r){
+  return tenureStatus(r,effectivenessThreshold());
+}
+
+function updateEffectivenessLabels(){
+  const t=effectivenessThreshold();
+  const labels={
+    activePlus:`ACTIVO +${t}`,
+    activeMinus:`ACTIVO -${t}`,
+    bajaPlus:`BAJA +${t}`,
+    bajaMinus:`BAJA -${t}`
+  };
+
+  document.getElementById('eEfectLabel').textContent=`Efectividad +${t}`;
+  document.getElementById('eBajasSub').textContent=`Bajas -${t} y +${t} días`;
+  document.getElementById('eBajasThresholdLabel').textContent=`Bajas -${t} días`;
+
+  const setLegend=(id,status,color,label)=>{
+    const b=document.getElementById(id);
+    if(!b) return;
+    b.dataset.effStatus=status;
+    b.innerHTML=`<i class="dot" style="background:${color}"></i>${label}`;
+  };
+  setLegend('effLegendActivePlus',labels.activePlus,'#18A672',`Activo +${t}`);
+  setLegend('effLegendLow',labels.bajaMinus,'#E5484D',`Baja -${t}`);
+  setLegend('effLegendActiveMinus',labels.activeMinus,'#F2B544',`Activo -${t}`);
+  setLegend('effLegendBajaPlus',labels.bajaPlus,'#1683B5',`Baja +${t}`);
+
+  const ps=document.getElementById('personStatus');
+  if(ps){
+    const current=ps.value;
+    ps.innerHTML=`<option value="">Todos los estatus</option>
+      <option>${labels.activePlus}</option>
+      <option>${labels.activeMinus}</option>
+      <option>${labels.bajaPlus}</option>
+      <option>${labels.bajaMinus}</option>`;
+    if([...ps.options].some(o=>o.value===current)) ps.value=current;
+    else ps.value='';
+  }
+
+  // Si se cambia de 90 a 180, un filtro de leyenda anterior deja de aplicar.
+  if(effChartFilter && !Object.values(labels).includes(effChartFilter)) effChartFilter='';
 }
 function isFormalVacancy(r){
   return !!(r.solicitud && String(r.solicitud).trim());
@@ -1351,6 +1531,46 @@ function totalVacanciesForSelectedPeriod(){
 }
 
 
+
+function vacanciesAssignedDuringSelectedPeriod(){
+  const bounds=selectedMonthBounds();
+
+  return data.filter(r=>{
+    if(!isFormalVacancy(r)) return false;
+    if(!multiMatches('unidad',r.unidad)) return false;
+    if(!multiMatches('sucursal',r.sucursal)) return false;
+    if(!multiMatches('area',r.area)) return false;
+    if(!multiMatches('reclutador',r.reclutador)) return false;
+
+    // Sin filtro de periodo: toda la base de vacantes formales.
+    if(!bounds) return true;
+
+    const sol=d(r.solicitud);
+    if(!sol || sol>bounds.end) return false;
+
+    const ingreso=d(r.ingresoFecha);
+    const cancel=d(r.cancelacionFecha);
+
+    // Si conocemos el evento que cerró la vacante antes de comenzar
+    // el periodo, ya no estuvo asignada durante ese periodo.
+    if(ingreso && ingreso<bounds.start) return false;
+    if(cancel && cancel<bounds.start) return false;
+
+    // Para registros históricos cerrados sin fecha de cierre:
+    // no los arrastramos indefinidamente a meses posteriores.
+    if(r.estatus==='CUBIERTA' && !ingreso){
+      return selectedPeriodContainsDate(r.solicitud);
+    }
+    if(r.estatus==='CANCELADA' && !cancel){
+      return selectedPeriodContainsDate(r.solicitud);
+    }
+
+    // ACTIVA, EN PAUSA, cubierta/cancelada dentro del periodo,
+    // o cubierta/cancelada después del periodo: sí estuvo asignada.
+    return true;
+  });
+}
+
 function globalFiltered(dateField='solicitud'){
   return data.filter(r=>
     periodPredicate(r,dateField) &&
@@ -1464,7 +1684,7 @@ function setMetricDangerById(valueId,isDanger){
 }
 
 function renderKPIs(){
-  const hires=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+  const hires=dedupeHiresByName(globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso));
   const totalPeriod=totalVacanciesForSelectedPeriod();
   const activePeriod=activeVacanciesForSelectedPeriod();
   const coveredPeriod=coveredVacanciesForSelectedPeriod();
@@ -1530,100 +1750,190 @@ function renderGauges(){
     </div>`;
   }).join('');
 }
+
+function trendMonthWindow(mi){
+  let start=new Date(2026,mi,1,0,0,0);
+  let end=new Date(2026,mi+1,0,23,59,59,999);
+
+  const selectedWindows=periodWindows();
+  if(periodState.mode==='range' && selectedWindows.length){
+    const range=selectedWindows[0];
+    if(range.start>start && range.start<=end) start=range.start;
+    if(range.end<end && range.end>=start) end=range.end;
+  }
+  return {start,end};
+}
+
+function vacancyPresentInTrendWindow(r,start,end){
+  const sol=d(r.solicitud);
+  if(!sol || sol>end) return false;
+
+  const ing=d(r.ingresoFecha);
+  const cancel=d(r.cancelacionFecha);
+
+  if(ing && ing<start) return false;
+  if(cancel && cancel<start) return false;
+
+  if(r.estatus==='CUBIERTA' && !ing) return sol>=start && sol<=end;
+  if(r.estatus==='CANCELADA' && !cancel) return sol>=start && sol<=end;
+
+  return true;
+}
+
+function trendDetailRows(unit,mi,type){
+  const {start,end}=trendMonthWindow(mi);
+
+  let rows=filteredIgnoringPeriod()
+    .filter(isFormalVacancy)
+    .filter(r=>r.unidad===unit);
+
+  if(type==='total'){
+    return rows.filter(r=>vacancyPresentInTrendWindow(r,start,end));
+  }
+
+  rows=rows.filter(r=>{
+    const sol=d(r.solicitud), ing=d(r.ingresoFecha);
+    if(!sol||!ing||ing<sol) return false;
+    return ing>=start && ing<=end;
+  });
+
+  if(type==='sla'){
+    return rows.filter(r=>{
+      const n=pauseAdjustedDays(r,r.ingresoFecha);
+      return n!=null && n<=45;
+    });
+  }
+
+  if(type==='late'){
+    return rows.filter(r=>{
+      const n=pauseAdjustedDays(r,r.ingresoFecha);
+      return n!=null && n>45;
+    });
+  }
+
+  return rows;
+}
+
 function renderRecruitmentTrend(){
   const box=document.getElementById('recruitmentTrend');
   if(!box) return;
 
-  // Ene-Sep 2026. Respeta Unidad, Sucursal, Área y Reclutador; ignora filtro de Periodo.
-  const base=filteredIgnoringPeriod().filter(isFormalVacancy).filter(r=>r.estatus!=='CANCELADA');
-  const months=MONTH_SHORT.slice(0,9);
+  // Respeta TODOS los filtros globales.
+  // filteredIgnoringPeriod ya aplica Unidad, Sucursal, Área y Reclutador.
+  const base=filteredIgnoringPeriod().filter(isFormalVacancy);
 
-  const series=months.map((label,mi)=>{
-    const start=new Date(2026,mi,1);
-    const end=new Date(2026,mi+1,0,23,59,59,999);
+  // Determinar qué meses deben mostrarse según Periodo.
+  let monthIndexes=[];
+  if(periodState.mode==='months' && periodState.months.size){
+    monthIndexes=[...periodState.months].sort((a,b)=>a-b);
+  }else if(periodState.mode==='range' && periodState.start && periodState.end){
+    const a=d(periodState.start), b=d(periodState.end);
+    if(a&&b){
+      for(let mi=a.getMonth();mi<=b.getMonth();mi++) monthIndexes.push(mi);
+    }
+  }else{
+    // Acumulado: mostrar desde enero hasta el mes actual de 2026.
+    const current=todayISO();
+    const currentDate=d(current);
+    const lastMonth=currentDate&&currentDate.getFullYear()===2026 ? currentDate.getMonth() : 8;
+    monthIndexes=Array.from({length:lastMonth+1},(_,i)=>i);
+  }
 
-    // Vacantes totales del periodo: nuevas + arrastradas activas + cubiertas durante el mes.
-    const total=base.filter(r=>{
-      const sol=d(r.solicitud);
-      if(!sol || sol>end) return false;
 
-      const ing=d(r.ingresoFecha);
-      const validIngreso=ing && ing>=sol;
 
-      const openedInPeriod=sol>=start && sol<=end;
-      const coveredInPeriod=validIngreso && ing>=start && ing<=end;
-      const activeAtPeriodEnd=validIngreso ? ing>end : r.estatus==='ACTIVA';
+  const units=UNIT_ORDER.filter(u=>base.some(r=>r.unidad===u));
 
-      return openedInPeriod || coveredInPeriod || activeAtPeriodEnd;
-    }).length;
+  const series=units.map(unit=>{
+    const rows=base.filter(r=>r.unidad===unit);
+    const monthly=monthIndexes.map(mi=>{
+      const {start,end}=trendMonthWindow(mi);
 
-    // Activas al cierre.
-    const active=base.filter(r=>{
-      const sol=d(r.solicitud);
-      if(!sol || sol>end) return false;
-      const ing=d(r.ingresoFecha);
-      if(ing && ing>=sol) return ing>end;
-      return r.estatus==='ACTIVA';
-    }).length;
+      const assigned=rows.filter(r=>vacancyPresentInTrendWindow(r,start,end));
 
-    // Cubiertas durante el mes, separadas por SLA de 45 días.
-    const coveredRows=base.filter(r=>{
-      const sol=d(r.solicitud), ing=d(r.ingresoFecha);
-      if(!ing) return false;
-      if(sol && ing<sol) return false;
-      return ing>=start && ing<=end;
+      const covered=rows.filter(r=>{
+        const sol=d(r.solicitud), ing=d(r.ingresoFecha);
+        if(!sol||!ing||ing<sol) return false;
+        return ing>=start && ing<=end;
+      });
+
+      const inSla=covered.filter(r=>{
+        const n=pauseAdjustedDays(r,r.ingresoFecha);
+        return n!=null && n<=45;
+      }).length;
+
+      const outSla=covered.filter(r=>{
+        const n=pauseAdjustedDays(r,r.ingresoFecha);
+        return n!=null && n>45;
+      }).length;
+
+      return {
+        mi,
+        label:MONTH_SHORT[mi],
+        total:assigned.length,
+        inSla,
+        outSla
+      };
     });
 
-    const coveredInSla=coveredRows.filter(r=>{
-      const n=days(r.solicitud,r.ingresoFecha);
-      return n!=null && n<=45;
-    }).length;
+    return {
+      unit,
+      color:COLORS[unit]||'#667085',
+      monthly,
+      periodTotal:Math.max(0,...monthly.map(x=>x.total))
+    };
+  }).filter(s=>s.monthly.some(x=>x.total||x.inSla||x.outSla));
 
-    const coveredLate=coveredRows.filter(r=>{
-      const n=days(r.solicitud,r.ingresoFecha);
-      return n!=null && n>45;
-    }).length;
+  const legend=document.getElementById('trendUnitLegend');
+  if(legend){
+    legend.innerHTML=series.map(s=>`
+      <span><i class="trend-unit-line-swatch" style="background:${s.color}"></i>${s.unit}</span>
+    `).join('');
+  }
 
-    return {label,total,active,coveredInSla,coveredLate};
-  });
+  if(!series.length){
+    box.innerHTML='<div class="unit-trend-empty">No hay vacantes para los filtros seleccionados.</div>';
+    return;
+  }
 
-  const maxVal=Math.max(1,...series.flatMap(x=>[
-    x.total,x.active,x.coveredInSla,x.coveredLate
-  ]));
-  const ceiling=Math.max(5,Math.ceil(maxVal/5)*5);
+  const maxVal=Math.max(1,...series.flatMap(s=>s.monthly.map(x=>x.total)));
 
-  const W=900,H=270,ml=42,mr=18,mt=24,mb=38;
-  const pw=W-ml-mr, ph=H-mt-mb;
-  const x=i=>ml+(pw/(series.length-1))*i;
-  const y=v=>mt+ph-(v/ceiling)*ph;
+  box.innerHTML=`<div class="unit-trend-grid">${series.map(s=>{
+    const cols=Math.max(1,s.monthly.length);
+    const sumInSla=s.monthly.reduce((a,b)=>a+b.inSla,0);
+    const sumOutSla=s.monthly.reduce((a,b)=>a+b.outSla,0);
 
-  const ticks=5;
-  const grid=Array.from({length:ticks+1},(_,i)=>{
-    const val=Math.round(ceiling*i/ticks);
-    const yy=y(val);
-    return `<line class="trend-grid" x1="${ml}" y1="${yy}" x2="${W-mr}" y2="${yy}"></line><text class="trend-axis" x="${ml-8}" y="${yy+3}" text-anchor="end">${val}</text>`;
-  }).join('');
+    return `<div class="unit-trend-card">
+      <div class="unit-trend-head">
+        <div>
+          <div class="unit-trend-name"><i class="unit-trend-dot" style="background:${s.color}"></i>${s.unit}</div>
+          <div class="small" style="margin-top:3px">${sumInSla} cubierta${sumInSla===1?'':'s'} en SLA · ${sumOutSla} fuera de SLA</div>
+        </div>
+        <div class="unit-trend-total">
+          <strong>${Math.max(...s.monthly.map(x=>x.total),0)}</strong>
+          <span>máx. vacantes/mes</span>
+        </div>
+      </div>
 
-  const labels=series.map((s,i)=>`<text class="trend-axis" x="${x(i)}" y="${H-12}" text-anchor="middle">${s.label}</text>`).join('');
-
-  const totalPts=series.map((s,i)=>`${x(i)},${y(s.total)}`).join(' ');
-  const activePts=series.map((s,i)=>`${x(i)},${y(s.active)}`).join(' ');
-  const okPts=series.map((s,i)=>`${x(i)},${y(s.coveredInSla)}`).join(' ');
-  const latePts=series.map((s,i)=>`${x(i)},${y(s.coveredLate)}`).join(' ');
-
-  const totalDots=series.map((s,i)=>`<circle class="trend-point-total" cx="${x(i)}" cy="${y(s.total)}" r="5"></circle><text class="trend-value" x="${x(i)}" y="${Math.max(12,y(s.total)-10)}" text-anchor="middle">${s.total}</text>`).join('');
-  const activeDots=series.map((s,i)=>`<circle class="trend-point-active" cx="${x(i)}" cy="${y(s.active)}" r="5"></circle><text class="trend-value" x="${x(i)}" y="${Math.min(H-42,y(s.active)+18)}" text-anchor="middle">${s.active}</text>`).join('');
-  const okDots=series.map((s,i)=>`<circle class="trend-point-covered-ok" cx="${x(i)}" cy="${y(s.coveredInSla)}" r="5"></circle><text class="trend-value" x="${x(i)-7}" y="${Math.max(14,y(s.coveredInSla)-9)}" text-anchor="end">${s.coveredInSla}</text>`).join('');
-  const lateDots=series.map((s,i)=>`<circle class="trend-point-covered-late" cx="${x(i)}" cy="${y(s.coveredLate)}" r="5"></circle><text class="trend-value" x="${x(i)+7}" y="${Math.min(H-42,y(s.coveredLate)+18)}" text-anchor="start">${s.coveredLate}</text>`).join('');
-
-  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tendencia mensual de vacantes totales, activas al cierre y cubiertas dentro o fuera de SLA">
-    ${grid}
-    <polyline class="trend-line-total" points="${totalPts}"></polyline>
-    <polyline class="trend-line-active" points="${activePts}"></polyline>
-    <polyline class="trend-line-covered-ok" points="${okPts}"></polyline>
-    <polyline class="trend-line-covered-late" points="${latePts}"></polyline>
-    ${totalDots}${activeDots}${okDots}${lateDots}${labels}
-  </svg>`;
+      <div class="unit-months" style="grid-template-columns:repeat(${cols},minmax(34px,1fr))">
+        ${s.monthly.map(v=>{
+          const h=v.total?Math.max(8,(v.total/maxVal)*82):0;
+          return `<div class="unit-month-col">
+            <div class="unit-bar-zone">
+              ${v.total?`<div class="unit-bar" style="height:${h}px;background:${s.color}" title="${s.unit} · ${v.label}: ${v.total} vacantes">
+                <span class="unit-bar-value" data-trend-detail="total" data-unit="${s.unit}" data-month="${v.mi}" title="Ver detalle de las ${v.total} vacantes">${v.total}</span>
+              </div>`:''}
+            </div>
+            <div class="unit-month-label">${v.label}</div>
+            <div class="unit-sla-row">
+              ${v.inSla?`<span class="unit-sla-pill ok" data-trend-detail="sla" data-unit="${s.unit}" data-month="${v.mi}" title="Ver ${v.inSla} cobertura(s) dentro de SLA">✓${v.inSla}</span>`:''}
+              ${v.outSla?`<span class="unit-sla-pill late" data-trend-detail="late" data-unit="${s.unit}" data-month="${v.mi}" title="Ver ${v.outSla} cobertura(s) fuera de SLA">!${v.outSla}</span>`:''}
+              ${!v.inSla&&!v.outSla?'<span class="unit-sla-empty">—</span>':''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
 }
 
 function renderAlerts(){
@@ -1749,31 +2059,71 @@ function renderVacTable(custom){
   document.getElementById('vacTable').innerHTML=h;
 }
 function renderEffectiveness(){
+  updateEffectivenessLabels();
+
+  const threshold=effectivenessThreshold();
   const hires=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
-  const cats={'ACTIVO +90':0,'ACTIVO -90':0,'BAJA +90':0,'BAJA -90':0};
-  hires.forEach(r=>cats[tenureStatus(r)]++);
-  const evaluable=cats['ACTIVO +90']+cats['BAJA +90']+cats['BAJA -90'];
-  const success=cats['ACTIVO +90']+cats['BAJA +90'];
+  const keys={
+    activePlus:`ACTIVO +${threshold}`,
+    activeMinus:`ACTIVO -${threshold}`,
+    bajaPlus:`BAJA +${threshold}`,
+    bajaMinus:`BAJA -${threshold}`
+  };
+  const cats={
+    [keys.activePlus]:0,
+    [keys.activeMinus]:0,
+    [keys.bajaPlus]:0,
+    [keys.bajaMinus]:0
+  };
+
+  hires.forEach(r=>cats[tenureStatus(r,threshold)]++);
+
+  // Evaluable = persona que ya alcanzó el umbral o causó baja antes de alcanzarlo.
+  // Activos que aún no alcanzan el umbral no entran en el denominador.
+  const evaluable=cats[keys.activePlus]+cats[keys.bajaPlus]+cats[keys.bajaMinus];
+  const success=cats[keys.activePlus]+cats[keys.bajaPlus];
   const eff=evaluable?Math.round(success/evaluable*100):0;
+
   document.getElementById('eEfect').textContent=eff+'%';
   document.getElementById('eIngresos').textContent=hires.length;
-  document.getElementById('eBajas').textContent=cats['BAJA +90']+cats['BAJA -90'];
-  document.getElementById('eBajas90').textContent=cats['BAJA -90'];
+  document.getElementById('eBajas').textContent=cats[keys.bajaPlus]+cats[keys.bajaMinus];
+  document.getElementById('eBajas90').textContent=cats[keys.bajaMinus];
 
-  // Meta de efectividad = 80%.
   setMetricDangerById('eEfect',eff<80);
-  setMetricDangerById('eBajas90',cats['BAJA -90']>0);
+  setMetricDangerById('eBajas90',cats[keys.bajaMinus]>0);
 
   document.getElementById('donutVal').textContent=eff+'%';
-  const red=100-eff; document.getElementById('donut').style.background=`conic-gradient(#18A672 0 ${eff}%, #E5484D ${eff}% 100%)`;
-  document.getElementById('effBreakdown').innerHTML=`<b>Meta:</b> 80%<br><b>Activo +90:</b> ${cats['ACTIVO +90']}<br><b>Baja +90:</b> ${cats['BAJA +90']}<br><b>Baja -90:</b> ${cats['BAJA -90']}<br><b>Activo -90 (no evaluable):</b> ${cats['ACTIVO -90']}`;
-  renderBars(hires); renderPeople(hires);
+  document.getElementById('donut').style.background=`conic-gradient(#18A672 0 ${eff}%, #E5484D ${eff}% 100%)`;
+
+  document.getElementById('effBreakdown').innerHTML=
+    `<b>Medición:</b> ${threshold} días<br>`+
+    `<b>Meta:</b> 80%<br>`+
+    `<b>Activo +${threshold}:</b> ${cats[keys.activePlus]}<br>`+
+    `<b>Baja +${threshold}:</b> ${cats[keys.bajaPlus]}<br>`+
+    `<b>Baja -${threshold}:</b> ${cats[keys.bajaMinus]}<br>`+
+    `<b>Activo -${threshold} (no evaluable):</b> ${cats[keys.activeMinus]}`;
+
+  renderBars(hires,threshold);
+  renderPeople(hires,threshold);
 }
-function renderBars(hires){
+
+function renderBars(hires,threshold=90){
+  const keys={
+    activePlus:`ACTIVO +${threshold}`,
+    activeMinus:`ACTIVO -${threshold}`,
+    bajaPlus:`BAJA +${threshold}`,
+    bajaMinus:`BAJA -${threshold}`
+  };
+
   const monthly=MONTHS.slice(0,9).map((m,mi)=>{
     const rr=hires.filter(r=>monthIndex(r.ingresoFecha)===mi);
-    const c={'ACTIVO +90':0,'ACTIVO -90':0,'BAJA +90':0,'BAJA -90':0};
-    rr.forEach(r=>c[tenureStatus(r)]++);
+    const c={
+      [keys.activePlus]:0,
+      [keys.activeMinus]:0,
+      [keys.bajaPlus]:0,
+      [keys.bajaMinus]:0
+    };
+    rr.forEach(r=>c[tenureStatus(r,threshold)]++);
     return {mi,rr,c,total:rr.length};
   });
 
@@ -1791,8 +2141,13 @@ function renderBars(hires){
     return `<div class="y-grid" style="bottom:${bottom}%"></div>`;
   }).join('');
 
-  const colorMap={'ACTIVO +90':'#18A672','BAJA -90':'#E5484D','ACTIVO -90':'#F2B544','BAJA +90':'#1683B5'};
-  const order=['ACTIVO +90','BAJA -90','ACTIVO -90','BAJA +90'];
+  const colorMap={
+    [keys.activePlus]:'#18A672',
+    [keys.bajaMinus]:'#E5484D',
+    [keys.activeMinus]:'#F2B544',
+    [keys.bajaPlus]:'#1683B5'
+  };
+  const order=[keys.activePlus,keys.bajaMinus,keys.activeMinus,keys.bajaPlus];
 
   document.getElementById('bars').innerHTML=monthly.map(({mi,c,total})=>{
     const height=(total/axisMax)*240;
@@ -1812,15 +2167,30 @@ function renderBars(hires){
     btn.classList.toggle('active-filter',btn.dataset.effStatus===effChartFilter);
   });
 }
-function renderPeople(hires){
+
+function renderPeople(hires,threshold=90){
   const f=document.getElementById('personStatus').value;
-  let rs=f?hires.filter(r=>tenureStatus(r)===f):hires;
-  if(effChartFilter) rs=rs.filter(r=>tenureStatus(r)===effChartFilter);
+  let rs=f?hires.filter(r=>tenureStatus(r,threshold)===f):hires;
+  if(effChartFilter) rs=rs.filter(r=>tenureStatus(r,threshold)===effChartFilter);
+
   rs=[...rs].sort((a,b)=>(d(b.ingresoFecha)||0)-(d(a.ingresoFecha)||0));
   document.getElementById('people').innerHTML=rs.length?rs.map(r=>{
-    const st=tenureStatus(r), cl=st.includes('BAJA -90')?'red':st.includes('BAJA +90')?'blue':st.includes('ACTIVO +90')?'green':'yellow';
+    const st=tenureStatus(r,threshold);
+    const cl=st.includes(`BAJA -${threshold}`)?'red':
+      st.includes(`BAJA +${threshold}`)?'blue':
+      st.includes(`ACTIVO +${threshold}`)?'green':'yellow';
     const img=driveImg(r.foto);
-    return `<div class="card person" data-person="H${r.id}"><div class="person-photo">${img?`<img src="${img}" alt="${r.ingreso||''}" style="object-fit:cover;object-position:center center;transform:none;padding:0" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="avatar" style="display:none">${initials(r.ingreso)}</div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}</div><div class="person-body"><div class="person-name">${r.ingreso}</div><div class="person-meta">${r.vacante||'Ingreso sin vacante formal'}<br>${r.unidad} · ${r.sucursal}<br>Ingreso: ${fmtDate(r.ingresoFecha)}</div><div style="margin-top:8px"><span class="badge ${cl}">${st}</span></div></div></div>`;
+
+    return `<div class="card person" data-person="H${r.id}">
+      <div class="person-photo">
+        ${img?`<img src="${img}" alt="${r.ingreso||''}" style="object-fit:cover;object-position:center center;transform:none;padding:0" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="avatar" style="display:none">${initials(r.ingreso)}</div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}
+      </div>
+      <div class="person-body">
+        <div class="person-name">${r.ingreso}</div>
+        <div class="person-meta">${r.vacante||'Ingreso sin vacante formal'}<br>${r.unidad} · ${r.sucursal}<br>Ingreso: ${fmtDate(r.ingresoFecha)}</div>
+        <div style="margin-top:8px"><span class="badge ${cl}">${st}</span></div>
+      </div>
+    </div>`;
   }).join(''):'<div class="empty">No hay contrataciones para estos filtros.</div>';
 }
 
@@ -1831,7 +2201,7 @@ function baseTable(rows, cols){
 function renderBase(type='vac'){
   const box=document.getElementById('baseContent');
   if(type==='vac'){
-    let rows=globalFiltered('solicitud');
+    let rows=vacanciesAssignedDuringSelectedPeriod();
 
     if(baseVacStatusFilter){
       rows=rows.filter(r=>statusForSelectedPeriod(r)===baseVacStatusFilter);
@@ -1843,7 +2213,7 @@ function renderBase(type='vac'){
       return aa-bb || (coverageDays(b)||-1)-(coverageDays(a)||-1);
     });
 
-    let h=`<div class="base-filter-bar">
+    let h=`<div class="small" style="margin-bottom:8px">Muestra las vacantes que estuvieron asignadas durante el periodo seleccionado, incluyendo activas, cubiertas, en pausa y canceladas.</div><div class="base-filter-bar">
       <button class="base-filter-btn ${baseVacStatusFilter===''?'active':''}" data-base-vac-filter="">TODAS</button>
       <button class="base-filter-btn ${baseVacStatusFilter==='ACTIVA'?'active':''}" data-base-vac-filter="ACTIVA">ACTIVAS</button>
       <button class="base-filter-btn ${baseVacStatusFilter==='CUBIERTA'?'active':''}" data-base-vac-filter="CUBIERTA">CUBIERTAS</button>
@@ -1863,7 +2233,7 @@ function renderBase(type='vac'){
       '</tr></thead><tbody>';
 
     if(!['ACTIVA','CUBIERTA','EN PAUSA','CANCELADA'].includes(baseVacStatusFilter)) h+=solicitudRowsHtml();
-    h+=rows.map(r=>`<tr>
+    h+=rows.map(r=>`<tr class="clickable" data-base-vac-id="${r.id}">
       <td><b>${r.codigo||r.id||'—'}</b></td>
       <td><b>${r.vacante||'—'}</b></td>
       <td>${r.unidad||'—'}</td>
@@ -1891,7 +2261,7 @@ function renderBase(type='vac'){
     h+='</tbody></table></div>';
     box.innerHTML=h;
   }else if(type==='cont'){
-    const rows=globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso);
+    const rows=dedupeHiresByName(globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso));
     let h=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <div class="small">Incluye ingresos con vacante y sin requisición formal. La fuente de reclutamiento es obligatoria para ingresos desde septiembre 2026.</div>
       <button class="btn primary" data-base-add-hire style="${accessToken?'':'display:none'}">+ Agregar contratación</button>
@@ -1911,7 +2281,12 @@ function renderBase(type='vac'){
       <td>${fmtDate(r.bajaFecha)}</td>
       <td>${r.motivoBaja||'—'}</td>
       <td>${tenureStatus(r)}</td>
-      <td><button class="row-action-btn edit" data-edit-hire="${r.id}" style="${accessToken?'':'display:none'}">Editar</button></td>
+      <td>
+        <div class="row-actions">
+          <button class="row-action-btn edit" data-edit-hire="${r.id}" style="${accessToken?'':'display:none'}">Editar</button>
+          <button class="row-action-btn delete" data-delete-hire="${r.id}" style="${accessToken?'':'display:none'}">Eliminar</button>
+        </div>
+      </td>
     </tr>`).join('');
     h+='</tbody></table></div>';
     box.innerHTML=h;
@@ -2170,8 +2545,19 @@ async function saveManualHire(){
 
   try{
     if(editingHireId){
+      // Al editar una contratación existente NO bloquear por coincidencia de nombre.
+      // Puede haber un registro histórico/duplicado oculto en Supabase y eso no debe
+      // impedir actualizar fecha de baja, fuente, motivo u otros datos del registro actual.
       await dbUpdateHire(editingHireId,hireToDb(record));
     }else{
+      // El control de duplicados se aplica únicamente al crear una contratación nueva.
+      const duplicate=hiresData.find(h=>
+        normalizePersonName(h.ingreso)===normalizePersonName(ingreso)
+      );
+      if(duplicate){
+        alert(`Ya existe una contratación registrada para ${duplicate.ingreso}. No se creó un registro duplicado.`);
+        return false;
+      }
       await dbInsertHire(record);
     }
     closeHireModal();
@@ -2472,30 +2858,82 @@ function refreshFilterOptionsFromCatalogs(){
 }
 
 function openDrawer(r,person=false){
-  const st=tenureStatus(r), cd=coverageDays(r), img=driveImg(r.foto);
+  const inEffectiveness=document.querySelector('.tab.active')?.dataset.tab==='efectividad';
+  const threshold=inEffectiveness?effectivenessThreshold():90;
+  const st=tenureStatus(r,threshold), cd=coverageDays(r), img=driveImg(r.foto);
+  const f=(label,value)=>`<div class="field"><b>${label}</b>${value==null||value===''?'—':value}</div>`;
+  const full=(label,value)=>`<div class="field" style="grid-column:1/-1"><b>${label}</b><div style="white-space:pre-wrap">${value==null||value===''?'—':value}</div></div>`;
+
   document.getElementById('drawerContent').innerHTML=person?`
-    <div style="display:flex;gap:15px;align-items:center">${img?`<div style="width:120px;aspect-ratio:4/5;border-radius:15px;overflow:hidden;background:#ECEBE8;flex:0 0 auto"><img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:center center"></div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}<div><div class="small">FICHA DE COLABORADOR</div><h3>${r.ingreso||'Sin nombre'}</h3><span class="badge ${st==='BAJA -90'?'red':st==='BAJA +90'?'blue':st==='ACTIVO +90'?'green':'yellow'}">${st}</span></div></div>
+    <div style="display:flex;gap:15px;align-items:center">${img?`<div style="width:120px;aspect-ratio:4/5;border-radius:15px;overflow:hidden;background:#ECEBE8;flex:0 0 auto"><img src="${img}" style="width:100%;height:100%;object-fit:cover;object-position:center center"></div>`:`<div class="avatar">${initials(r.ingreso)}</div>`}<div><div class="small">FICHA DE COLABORADOR</div><h3>${r.ingreso||'Sin nombre'}</h3><span class="badge ${st===`BAJA -${threshold}`?'red':st===`BAJA +${threshold}`?'blue':st===`ACTIVO +${threshold}`?'green':'yellow'}">${st}</span></div></div>
     <div class="drawer-grid">
-      <div class="field"><b>Unidad</b>${r.unidad||'—'}</div><div class="field"><b>Sucursal</b>${r.sucursal||'—'}</div>
-      <div class="field"><b>Rol / vacante</b>${r.vacante||'INGRESO SIN REQUISICIÓN FORMAL'}</div><div class="field"><b>Área</b>${r.area||'—'}</div>
-      <div class="field"><b>Reclutador</b>${r.reclutador||'—'}</div><div class="field"><b>Fecha de ingreso</b>${fmtDate(r.ingresoFecha)}</div>
-      <div class="field"><b>Fecha de baja</b>${fmtDate(r.bajaFecha)}</div><div class="field"><b>Días en la empresa</b>${r.ingresoFecha?days(r.ingresoFecha,r.bajaFecha||'2026-09-11'):'—'}</div>
-      <div class="field" style="grid-column:1/-1"><b>Motivo de baja</b>No disponible en ACUMULADO 2026</div>
+      ${f('Unidad',r.unidad)}
+      ${f('Sucursal',r.sucursal)}
+      ${f('Rol / vacante',r.vacante||'INGRESO SIN REQUISICIÓN FORMAL')}
+      ${f('Área',r.area)}
+      ${f('Reclutador',r.reclutador)}
+      ${f('Fecha de ingreso',fmtDate(r.ingresoFecha))}
+      ${f('Fecha de baja',fmtDate(r.bajaFecha))}
+      ${f('Días en la empresa',r.ingresoFecha?days(r.ingresoFecha,r.bajaFecha||todayISO()):'—')}
+      ${full('Motivo de baja',r.motivoBaja||'—')}
     </div>`:`
-    <div class="small">DETALLE DE VACANTE</div><h3>${r.vacante||'Vacante'}</h3>${statusBadge(r.estatus)}
-    <div class="drawer-grid">
-      <div class="field"><b>ID de vacante</b>${r.codigo||'—'}</div>
-      <div class="field"><b>Unidad</b>${r.unidad||'—'}</div><div class="field"><b>Sucursal</b>${r.sucursal||'—'}</div>
-      <div class="field"><b>Área</b>${r.area||'—'}</div><div class="field"><b>Reclutador</b>${r.reclutador||'—'}</div>
-      <div class="field"><b>Motivo</b>${r.motivo||'—'}</div><div class="field"><b>N° de plazas</b>${r.plazas}</div>
-      <div class="field"><b>Fecha solicitud</b>${fmtDate(r.solicitud)}</div><div class="field"><b>Días</b>${cd??'Sin fecha de solicitud'}</div>
-      <div class="field"><b>Fecha ingreso</b>${fmtDate(r.ingresoFecha)}</div><div class="field"><b>Fecha cancelación</b>${fmtDate(r.cancelacionFecha)}</div><div class="field"><b>Contratado</b>${r.ingreso||'—'}</div>
-      <div class="field"><b>Sueldo 100%</b>${money(r.sueldo)}</div><div class="field"><b>Vales</b>${money(r.vales)}</div>
-      <div class="field" style="grid-column:1/-1"><b>Horario</b>${r.horario||'—'}</div>
+    <div class="small">DETALLE COMPLETO DE VACANTE</div>
+    <h3>${r.vacante||'Vacante'}</h3>
+    ${statusBadge(statusForSelectedPeriod(r))}
+
+    <div class="drawer-grid" style="margin-top:14px">
+      ${f('ID de vacante',r.codigo||r.id)}
+      ${f('Estatus actual',r.estatus)}
+      ${f('Estatus en periodo seleccionado',statusForSelectedPeriod(r))}
+      ${f('Prioridad',r.prioridad)}
+      ${f('Unidad de negocio',r.unidad)}
+      ${f('Sucursal',r.sucursal)}
+      ${f('Área',r.area)}
+      ${f('Reclutador',r.reclutador)}
+
+      ${full('Solicitante',r.solicitante)}
+      ${f('Fecha de solicitud',fmtDate(r.solicitud))}
+      ${f('Fecha requerida de ingreso',fmtDate(r.fechaRequerida))}
+      ${f('Tipo de requisición',r.tipoRequisicion)}
+      ${f('Motivo de vacante',r.motivo)}
+      ${full('Justificación de la vacante',r.justificacion)}
+
+      ${f('Personal requerido para el área',r.personalRequerido)}
+      ${f('Escolaridad requerida',r.escolaridad)}
+      ${full('Experiencia requerida',r.experiencia)}
+      ${full('Certificaciones requeridas',r.certificaciones)}
+      ${full('Competencias clave',r.competencias)}
+
+      ${f('Turno',r.turno)}
+      ${f('Carga horaria',r.carga?`${r.carga} horas`:'—')}
+      ${full('Horario',r.horario)}
+      ${f('Descanso',r.descanso)}
+      ${f('Sueldo mensual / 100%',r.sueldo?money(r.sueldo):'—')}
+      ${f('Vales de despensa',r.vales?money(r.vales):'—')}
+      ${f('Tipo / detalle de bono',r.bono)}
+      ${full('Prestaciones adicionales',r.prestaciones)}
+      ${full('Funciones principales',r.funciones)}
+      ${full('Proceso de entrevistas / autorización',r.autorizacion)}
+      ${full('Comentarios',r.comentarios)}
+
+      ${f('Fecha de pausa',fmtDate(r.pausaFecha))}
+      ${f('Fecha de reactivación',fmtDate(r.reactivacionFecha))}
+      ${f('Días acumulados en pausa',r.diasPausaAcumulados||0)}
+      ${f('Fecha de cancelación',fmtDate(r.cancelacionFecha))}
+      ${f('Fecha de ingreso real',fmtDate(r.ingresoFecha))}
+      ${f('Persona contratada',r.ingreso)}
+      ${f('Días de cobertura',cd==null?'—':cd)}
+      ${f('Alerta SLA',cd==null?'—':expiryAlert(cd))}
     </div>
-    ${r.ingreso?`<button class="btn primary" style="margin-top:15px" onclick="openDrawer(data.find(x=>x.id==='${r.id}'),true)">Ver ficha del colaborador</button>`:'<button class="btn primary" style="margin-top:15px" onclick="registerHire(\''+r.id+'\')">Registrar ingreso</button>'}`;
+
+    ${r.ingreso
+      ?`<button class="btn primary" style="margin-top:15px" onclick="openDrawer(hiresData.find(x=>String(x.vacanteId)===String('${r.id}'))||data.find(x=>x.id==='${r.id}'),${"true"})">Ver ficha del colaborador</button>`
+      :(accessToken?`<button class="btn primary" style="margin-top:15px" onclick="registerHire('${r.id}')">Registrar ingreso</button>`:'')
+    }`;
+
   document.getElementById('drawerWrap').classList.add('open');
 }
+
 async function registerHire(id){
   if(!accessToken){ alert('Inicia sesión como administrador para registrar ingresos.'); return; }
   const r=data.find(x=>x.id===id); if(!r)return;
@@ -2764,6 +3202,10 @@ document.addEventListener('click',e=>{
 
   const tab=e.target.closest('.tab'); if(tab){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));tab.classList.add('active');['resumen','vacantes','efectividad','base'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('hidden',x!==tab.dataset.tab));}
   const row=e.target.closest('#vacTable tr[data-id]'); if(row) openDrawer(data.find(x=>x.id===row.dataset.id));
+  const baseVacRow=e.target.closest('tr[data-base-vac-id]');
+  if(baseVacRow && !e.target.closest('button,select,input')){
+    openDrawer(data.find(x=>x.id===baseVacRow.dataset.baseVacId));
+  }
   const hireRow=e.target.closest('[data-hire-detail]'); if(hireRow) openDrawer(hiresData.find(x=>x.id===hireRow.dataset.hireDetail),true);
   const person=e.target.closest('.person[data-person]'); if(person){const hid=person.dataset.person.replace(/^H/,'');openDrawer(hiresData.find(x=>x.id===hid),true);}
   const vacOp=e.target.closest('.vac-op[data-vac-op]');
@@ -2788,6 +3230,22 @@ document.addEventListener('click',e=>{
     effChartFilter='';
     setSingleMonthPeriod(stack.dataset.month);
   }
+  const trendDetail=e.target.closest('[data-trend-detail]');
+  if(trendDetail){
+    const type=trendDetail.dataset.trendDetail;
+    const unit=trendDetail.dataset.unit;
+    const mi=Number(trendDetail.dataset.month);
+    const rows=trendDetailRows(unit,mi,type);
+    const month=MONTHS[mi][0]+MONTHS[mi].slice(1).toLowerCase();
+    const title=type==='total'
+      ?`${unit} · ${month} · Vacantes asignadas`
+      :type==='sla'
+        ?`${unit} · ${month} · Cubiertas dentro de SLA`
+        :`${unit} · ${month} · Cubiertas fuera de SLA`;
+    openList(rows,title);
+    return;
+  }
+
   const bub=e.target.closest('.bubble'); if(bub){
     const rs=totalVacanciesForSelectedPeriod().filter(r=>r.unidad===bub.dataset.unit&&r.area===bub.dataset.area);
     openList(rs,`${bub.dataset.unit} · ${bub.dataset.area}`);
@@ -2851,6 +3309,10 @@ document.addEventListener('click',e=>{
   if(editHire){
     openHireModal(editHire.dataset.editHire);
   }
+  const deleteHireBtn=e.target.closest('[data-delete-hire]');
+  if(deleteHireBtn){
+    deleteHire(deleteHireBtn.dataset.deleteHire);
+  }
   const addHire=e.target.closest('[data-base-add-hire]');
   if(addHire){
     openHireModal();
@@ -2880,6 +3342,11 @@ document.getElementById('adminLoginForm').addEventListener('submit',async e=>{
 document.getElementById('closeDrawer').onclick=closeDrawer;
 document.getElementById('drawerWrap').addEventListener('click',e=>{if(e.target.id==='drawerWrap')closeDrawer()});
 document.getElementById('personStatus').addEventListener('change',()=>renderEffectiveness());
+document.getElementById('effThreshold').addEventListener('change',()=>{
+  effChartFilter='';
+  document.getElementById('personStatus').value='';
+  renderEffectiveness();
+});
 document.getElementById('vacStatusFilter').addEventListener('change',()=>renderVacTable());
 document.getElementById('vacDaysFilter').addEventListener('change',()=>renderVacTable());
 
