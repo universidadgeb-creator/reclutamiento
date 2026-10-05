@@ -99,7 +99,25 @@ button:disabled{opacity:.5;cursor:default;transform:none}
 
         <div class="q" data-key="solNombre" data-req>
           <label for="solNombre">Nombre completo</label>
-          <input class="line" id="solNombre" autocomplete="name" placeholder="Nombre de quien solicita">
+          <p class="hint">Solo los líderes autorizados pueden realizar una requisición de personal.</p>
+          <select class="line" id="solNombre" required>
+            <option value="">Selecciona tu nombre</option>
+            <option value="Julian Aguayo Sanchez">Julian Aguayo Sanchez</option>
+            <option value="Karen Anaid Armas Gutierrez">Karen Anaid Armas Gutierrez</option>
+            <option value="David Alejandro Diaz Garcia">David Alejandro Diaz Garcia</option>
+            <option value="Carlos Enrique Aceituno Pinzón">Carlos Enrique Aceituno Pinzón</option>
+            <option value="Jose Hiram González Palazuelos">Jose Hiram González Palazuelos</option>
+            <option value="Julia Elizabeth Rodríguez Arroyo">Julia Elizabeth Rodríguez Arroyo</option>
+            <option value="Linda Zoraida Padilla Alvarez">Linda Zoraida Padilla Alvarez</option>
+            <option value="Patricio Villareal Damy">Patricio Villareal Damy</option>
+            <option value="Ismael Castillo Gonzalez">Ismael Castillo Gonzalez</option>
+            <option value="Irma Leticia Rebollar Luna">Irma Leticia Rebollar Luna</option>
+            <option value="Erika Mercedes Orozco Aceves">Erika Mercedes Orozco Aceves</option>
+            <option value="Francisco Joel Santana Hernandez">Francisco Joel Santana Hernandez</option>
+            <option value="Alberto Ivan Sotelo Delgadillo">Alberto Ivan Sotelo Delgadillo</option>
+            <option value="Berenice Martinez Martinez">Berenice Martinez Martinez</option>
+            <option value="Laura Patricia Ibarra Infante">Laura Patricia Ibarra Infante</option>
+          </select>
         </div>
 
         <div class="q" data-key="solPuesto" data-req>
@@ -219,10 +237,7 @@ button:disabled{opacity:.5;cursor:default;transform:none}
           <input class="line hidden" id="bonoOtroTxt" placeholder="Escribe cuál es el tipo de bono" style="margin-top:14px">
         </div>
 
-        <div class="q" data-key="prestaciones" data-req>
-          <label for="prestaciones">Prestaciones adicionales</label>
-          <textarea class="box" id="prestaciones" rows="2" placeholder="Si no aplica, escribe “Ninguna”"></textarea>
-        </div>
+        <p class="note" style="margin-top:28px"><b>Prestaciones adicionales:</b> se definirán con Atracción y Selección del Talento al momento de asignar la vacante a un reclutador.</p>
 
         <div class="q" data-key="funciones" data-req>
           <label for="funciones">Funciones principales</label>
@@ -441,11 +456,11 @@ $('f').addEventListener('submit',async e=>{
     descanso:$('descanso').value.trim(),
     sueldo_100:isNaN(sueldo)?null:sueldo,
     bono:one('bono'),
-    prestaciones:$('prestaciones').value.trim(),
     funciones:$('funciones').value.trim(),
     autorizacion:$('autorizacion').value.trim()||null,
     fecha_solicitud:new Date().toLocaleDateString('en-CA'),
-    estatus:'POR ASIGNAR'
+    estatus:'POR ASIGNAR',
+    form_version:'REQUISICION_2026_VIGENTE'
   };
   const btn=$('send'), st=$('status'); btn.disabled=true; st.classList.remove('bad'); st.textContent='Enviando…';
   try{
