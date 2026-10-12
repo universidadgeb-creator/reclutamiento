@@ -854,7 +854,7 @@ function vacancyRoleAndSex(role, explicitSex=''){
 }
 
 function mapDbRow(r){
-  const roleSex=vacancyRoleAndSex(r.vacante||'',r.personal_requerido||'');
+  const roleSex=vacancyRoleAndSex(r.vacante||'',r.sexo||r.personal_requerido||'');
   return {
     id:String(r.id),
     codigo:r.codigo_vacante||'',
@@ -969,6 +969,49 @@ function vacancyToDb(r){
     prioridad:r.prioridad||null
   };
 }
+
+
+async function syncHireToLinkedVacancy(vacanteId,hireRecord){
+  if(!vacanteId) return;
+
+  const v=[...data,...solicitudes.rows].find(x=>String(x.id)===String(vacanteId));
+  if(!v) return;
+
+  // Mantener las rutas de información:
+  // vacantes_2026 conserva todos los datos propios de la vacante.
+  // contrataciones_2026 conserva todos los datos propios de la contratación.
+  // Solo se replica en vacantes la información de cobertura necesaria para su estatus.
+  const patch={
+    nombre_ingreso:hireRecord.ingreso||null,
+    fecha_ingreso_real:hireRecord.ingresoFecha||null,
+    estatus:'CUBIERTA'
+  };
+
+  await dbUpdateVacancy(vacanteId,patch);
+}
+
+function linkedVacancyData(vacanteId){
+  if(!vacanteId) return null;
+  return [...data,...solicitudes.rows].find(x=>String(x.id)===String(vacanteId))||null;
+}
+
+function applyVacancyTruthToHire(record){
+  if(!record?.vacanteId) return record;
+  const v=linkedVacancyData(record.vacanteId);
+  if(!v) return record;
+
+  // Para una contratación CON VACANTE, los campos compartidos se copian desde
+  // vacantes_2026 al registro de contrataciones_2026 al guardar.
+  return {
+    ...record,
+    vacante:v.vacante||record.vacante,
+    unidad:v.unidad||record.unidad,
+    sucursal:v.sucursal||record.sucursal,
+    area:v.area||record.area,
+    reclutador:v.reclutador||record.reclutador
+  };
+}
+
 
 async function loadVacancies(){
   const sync=document.getElementById('syncState');
@@ -2399,7 +2442,7 @@ function renderBase(type='vac'){
   }else if(type==='cont'){
     const rows=dedupeHiresByName(globalHireFiltered().filter(r=>r.ingresoFecha&&r.ingreso));
     let h=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-      <div class="small">Incluye ingresos con vacante y sin requisición formal. La fuente de reclutamiento es obligatoria para ingresos desde septiembre 2026.</div>
+      <div class="small">Cada sección conserva su fuente original en Supabase: Vacantes lee vacantes_2026 y Contrataciones lee contrataciones_2026. Al guardar registros vinculados se homologan únicamente los campos compartidos.</div>
       <button class="btn primary" data-base-add-hire style="${accessToken?'':'display:none'}">+ Agregar contratación</button>
     </div>`;
     h+='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+
@@ -2674,13 +2717,17 @@ async function saveManualHire(){
     return false;
   }
 
-  const record={
+  let record={
     vacanteId,
     ingreso,vacante,unidad,sucursal,area,reclutador,
     ingresoFecha,bajaFecha,motivoBaja,fuente,foto,
     origen:vacanteId?'CON VACANTE':'SIN REQUISICIÓN',
     comentarios
   };
+
+  // Si está ligada a una vacante, rol/unidad/sucursal/área/reclutador
+  // se guardan en contrataciones exactamente como existen en vacantes_2026.
+  record=applyVacancyTruthToHire(record);
 
   try{
     if(editingHireId){
@@ -2690,13 +2737,19 @@ async function saveManualHire(){
       const current=hiresData.find(h=>String(h.id)===String(editingHireId));
       if(!current) throw new Error('No se encontró la contratación actual en los datos cargados.');
 
+      const effectiveVacanteId=vacanteId||current.vacanteId||'';
+      const canonical=applyVacancyTruthToHire({
+        ...record,
+        vacanteId:effectiveVacanteId
+      });
+
       const patch={
         nombre:ingreso,
-        rol:vacante,
-        unidad_negocio:unidad,
-        sucursal:sucursal,
-        area:area||null,
-        reclutador:normalizeRecruiterName(reclutador)||null,
+        rol:canonical.vacante,
+        unidad_negocio:canonical.unidad,
+        sucursal:canonical.sucursal,
+        area:canonical.area||null,
+        reclutador:normalizeRecruiterName(canonical.reclutador)||null,
         fecha_ingreso:ingresoFecha,
         fecha_baja:bajaFecha||null,
         motivo_baja:motivoBaja||null,
@@ -2716,6 +2769,12 @@ async function saveManualHire(){
       }
 
       await dbUpdateHire(editingHireId,patch);
+
+      if(effectiveVacanteId){
+        await syncHireToLinkedVacancy(effectiveVacanteId,{
+          ingreso,vacante,unidad,sucursal,area,reclutador,ingresoFecha
+        });
+      }
     }else{
       // El control de duplicados se aplica únicamente al crear una contratación nueva.
       const duplicate=hiresData.find(h=>
@@ -2726,6 +2785,9 @@ async function saveManualHire(){
         return false;
       }
       await dbInsertHire(record);
+      if(vacanteId){
+        await syncHireToLinkedVacancy(vacanteId,record);
+      }
     }
     closeHireModal();
     await loadVacancies();
