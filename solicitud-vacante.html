@@ -249,11 +249,6 @@ button:disabled{opacity:.5;cursor:default;transform:none}
           <textarea class="box" id="funciones" rows="4" placeholder="Describe las responsabilidades del puesto"></textarea>
         </div>
 
-        <div class="q" data-key="autorizacion">
-          <label for="autorizacion">Proceso de entrevistas · ¿Quiénes entrevistan? <span class="opt">· opcional</span></label>
-          <p class="hint">Especifica el nombre y rol de la persona que realizará la entrevista en cada parte del proceso.</p>
-          <textarea class="box" id="autorizacion" rows="3" placeholder="Ej. Primera entrevista: Ana Pérez, Gerente de sucursal. Segunda entrevista: Luis Gómez, Líder del área."></textarea>
-        </div>
       </section>
 
       <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -464,7 +459,6 @@ $('f').addEventListener('submit',async e=>{
     sueldo_100:isNaN(sueldo)?null:sueldo,
     bono:one('bono'),
     funciones:$('funciones').value.trim(),
-    autorizacion:$('autorizacion').value.trim()||null,
     fecha_solicitud:new Date().toLocaleDateString('en-CA'),
     estatus:'POR ASIGNAR',
     form_version:'REQUISICION_2026_VIGENTE'
