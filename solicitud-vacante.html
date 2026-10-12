@@ -488,8 +488,14 @@ $('f').addEventListener('submit',async e=>{
     const msg=String(err?.message||'');
     if(msg.includes('vacantes_2026_turno_check')){
       st.textContent='No se pudo enviar: el catálogo de turnos de Supabase necesita actualizarse.';
+    }else if(msg.includes('form_version')){
+      st.textContent='No se pudo enviar: falta habilitar la versión vigente del formulario en Supabase.';
+    }else if(msg.includes('row-level security') || msg.includes('42501')){
+      st.textContent='No se pudo enviar: Supabase está bloqueando el envío por permisos.';
     }else{
-      st.textContent='No se pudo enviar. Inténtalo de nuevo.';
+      let clean=msg.replace(/\s+/g,' ').trim();
+      if(clean.length>220) clean=clean.slice(0,220)+'…';
+      st.textContent='Error de Supabase: '+(clean||'No se recibió detalle del error.');
     }
   }finally{ btn.disabled=false; }
 });
