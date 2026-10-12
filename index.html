@@ -811,11 +811,55 @@ function normalizeRecruiterName(value){
   return aliases[key] || raw.toUpperCase();
 }
 
+
+function normalizeVacancySex(value){
+  const raw=String(value||'').trim();
+  const key=raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase();
+
+  if(['MASCULINO','HOMBRE','HOMBRES'].includes(key)) return 'MASCULINO';
+  if(['FEMENINO','MUJER','MUJERES'].includes(key)) return 'FEMENINO';
+  if(['INDISTINTO','INDISTINTA','AMBOS'].includes(key)) return 'INDISTINTO';
+  return raw ? raw.toUpperCase() : '';
+}
+
+function vacancyRoleAndSex(role, explicitSex=''){
+  const original=String(role||'').trim();
+  let sex=normalizeVacancySex(explicitSex);
+
+  const key=original
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase();
+
+  if(!sex){
+    if(/\b(MUJER|MUJERES)\b/.test(key)) sex='FEMENINO';
+    else if(/\b(HOMBRE|HOMBRES)\b/.test(key)) sex='MASCULINO';
+  }
+
+  let clean=original
+    .replace(/\b(MUJER|MUJERES|HOMBRE|HOMBRES)\b/gi,'')
+    .replace(/\(\s*\)/g,'')
+    .replace(/\[\s*\]/g,'')
+    .replace(/\s*[-–—]\s*$/g,'')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+
+  return {
+    role: clean || original,
+    sex: sex || 'INDISTINTO'
+  };
+}
+
 function mapDbRow(r){
+  const roleSex=vacancyRoleAndSex(r.vacante||'',r.personal_requerido||'');
   return {
     id:String(r.id),
     codigo:r.codigo_vacante||'',
-    vacante:r.vacante||'',
+    vacante:roleSex.role,
+    sexo:roleSex.sex,
     unidad:r.unidad_negocio||'',
     sucursal:r.sucursal||'',
     area:r.area||'',
@@ -844,7 +888,7 @@ function mapDbRow(r){
     tipoRequisicion:r.tipo_requisicion||'',
     justificacion:r.justificacion||'',
     escolaridad:r.escolaridad||'',
-    personalRequerido:r.personal_requerido||'',
+    personalRequerido:roleSex.sex,
     experiencia:r.experiencia||'',
     certificaciones:r.certificaciones||'',
     competencias:r.competencias||'',
@@ -1237,7 +1281,7 @@ function openSolicitudDetail(id){
       ${f('Sucursal',r.sucursal)}${f('Unidad de negocio',r.unidad)}
       ${f('Área',r.area)}${f('N° de vacantes',r.plazas)}
       ${f('Fecha requerida de ingreso',r.fechaRequerida?fmtDate(r.fechaRequerida):'')}${f('Prioridad',r.prioridad)}
-      ${f('Tipo de requisición',r.tipoRequisicion)}${f('Personal requerido',r.personalRequerido)}
+      ${f('Tipo de requisición',r.tipoRequisicion)}${f('Sexo',r.sexo||r.personalRequerido||'INDISTINTO')}
       ${full('Justificación',r.justificacion)}
       ${f('Escolaridad',r.escolaridad)}${f('Experiencia',r.experiencia)}
       ${full('Certificaciones',r.certificaciones)}
@@ -2144,8 +2188,8 @@ function renderVacTable(custom){
     return aa-bb || (coverageDays(b)||-1)-(coverageDays(a)||-1);
   });
   document.getElementById('vacCount').textContent=`${rs.length} registros`;
-  let h='<thead><tr><th>Vacante</th><th>Unidad</th><th>Sucursal</th><th>Área</th><th>Reclutador</th><th>Solicitud</th><th>Estatus</th><th>Días</th><th>Alerta</th><th>Fecha contratación</th><th>Contratado</th></tr></thead><tbody>';
-  h+=rs.map(r=>`<tr class="clickable" data-id="${r.id}"><td><b>${r.vacante||'—'}</b></td><td>${r.unidad||'—'}</td><td>${r.sucursal||'—'}</td><td>${r.area||'—'}</td><td>${r.reclutador||'—'}</td><td>${fmtDate(r.solicitud)}</td><td>${statusBadge(statusForSelectedPeriod(r))}</td><td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td><td><span class="badge ${slaClass(coverageDays(r))}">${expiryAlert(coverageDays(r))}</span></td><td>${fmtDate(r.ingresoFecha)}</td><td>${r.ingreso||'—'}</td></tr>`).join('');
+  let h='<thead><tr><th>Vacante</th><th>Unidad</th><th>Sucursal</th><th>Área</th><th>Turno</th><th>Sexo</th><th>Reclutador</th><th>Solicitud</th><th>Estatus</th><th>Días</th><th>Alerta</th><th>Fecha contratación</th><th>Contratado</th></tr></thead><tbody>';
+  h+=rs.map(r=>`<tr class="clickable" data-id="${r.id}"><td><b>${r.vacante||'—'}</b></td><td>${r.unidad||'—'}</td><td>${r.sucursal||'—'}</td><td>${r.area||'—'}</td><td>${r.turno||'—'}</td><td>${r.sexo||'INDISTINTO'}</td><td>${r.reclutador||'—'}</td><td>${fmtDate(r.solicitud)}</td><td>${statusBadge(statusForSelectedPeriod(r))}</td><td><span class="badge ${slaClass(coverageDays(r))}">${coverageDays(r)??'—'}</span></td><td><span class="badge ${slaClass(coverageDays(r))}">${expiryAlert(coverageDays(r))}</span></td><td>${fmtDate(r.ingresoFecha)}</td><td>${r.ingreso||'—'}</td></tr>`).join('');
   h+='</tbody>';
   document.getElementById('vacTable').innerHTML=h;
 }
@@ -2313,7 +2357,7 @@ function renderBase(type='vac'){
     </div>`;
 
     const vacHeaders=[
-      'ID VACANTE','VACANTE','UNIDAD DE NEGOCIO','SUCURSAL','Área','RECLUTADOR','MOTIVO VACANTE','TURNO','HORARIO','COMENTARIOS','SUELDO 100%','CARGA HORARIA','VALES DE DESPENSA','FECHA DE SOLICITUD','ESTATUS','DÍAS','ALERTA DE VENCIMIENTO','ACCIONES'
+      'ID VACANTE','VACANTE','UNIDAD DE NEGOCIO','SUCURSAL','Área','RECLUTADOR','MOTIVO VACANTE','TURNO','SEXO','HORARIO','COMENTARIOS','SUELDO 100%','CARGA HORARIA','VALES DE DESPENSA','FECHA DE SOLICITUD','ESTATUS','DÍAS','ALERTA DE VENCIMIENTO','ACCIONES'
     ];
     h+='<div class="table-wrap" style="max-height:620px"><table><thead><tr>'+
       vacHeaders.map(x=>{
@@ -2333,6 +2377,7 @@ function renderBase(type='vac'){
       <td>${r.reclutador||'—'}</td>
       <td>${r.motivo||'—'}</td>
       <td>${r.turno||'—'}</td>
+      <td>${r.sexo||'INDISTINTO'}</td>
       <td style="min-width:240px;white-space:normal;line-height:1.35">${r.horario||'—'}</td>
       <td style="min-width:180px;white-space:normal;line-height:1.35">${r.comentarios||'—'}</td>
       <td>${money(r.sueldo)}</td>
@@ -3020,7 +3065,7 @@ function openDrawer(r,person=false){
       ${f('Motivo de vacante',r.motivo)}
       ${full('Justificación de la vacante',r.justificacion)}
 
-      ${f('Personal requerido para el área',r.personalRequerido)}
+      ${f('Sexo',r.sexo||r.personalRequerido||'INDISTINTO')}
       ${f('Escolaridad requerida',r.escolaridad)}
       ${full('Experiencia requerida',r.experiencia)}
       ${full('Certificaciones requeridas',r.certificaciones)}
