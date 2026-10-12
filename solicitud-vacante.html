@@ -474,13 +474,23 @@ $('f').addEventListener('submit',async e=>{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/vacantes_2026`,{
       method:'POST',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify(body)
     });
-    if(!res.ok) throw new Error(await res.text());
+    if(!res.ok){
+      const detail=await res.text();
+      console.error('Supabase:',detail);
+      throw new Error(detail);
+    }
     $('formWrap').classList.add('hidden'); $('bar').classList.add('hidden'); $('done').classList.remove('hidden');
     $('prog').style.width='100%';
     window.scrollTo({top:0});
   }catch(err){
     console.error(err);
-    st.classList.add('bad'); st.textContent='No se pudo enviar. Inténtalo de nuevo.';
+    st.classList.add('bad');
+    const msg=String(err?.message||'');
+    if(msg.includes('vacantes_2026_turno_check')){
+      st.textContent='No se pudo enviar: el catálogo de turnos de Supabase necesita actualizarse.';
+    }else{
+      st.textContent='No se pudo enviar. Inténtalo de nuevo.';
+    }
   }finally{ btn.disabled=false; }
 });
 
