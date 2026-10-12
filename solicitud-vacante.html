@@ -209,6 +209,11 @@ button:disabled{opacity:.5;cursor:default;transform:none}
         <div class="eyebrow">03 · Condiciones</div>
         <h2>Horario y compensación</h2>
 
+        <div class="q" data-key="turno" data-req>
+          <div class="label">Turno</div>
+          <div class="chips" data-chips="radio" data-name="turno"></div>
+        </div>
+
         <div class="q" data-key="carga" data-req>
           <div class="label">Carga horaria</div>
           <div class="chips" data-chips="radio" data-name="carga"></div>
@@ -280,6 +285,7 @@ const OPTIONS={
   escolaridad:['Primaria','Secundaria','Preparatoria','Carrera Técnica','Estudiante de Licenciatura','Licenciatura','Maestría'],
   genero:['Masculino','Femenino','Indistinto'],
   competencias:['Servicio al cliente','Liderazgo','Organización','Comunicación','Trabajo en equipo','Ventas','Análisis','Planeación'],
+  turno:['Matutino','Vespertino','Mixto'],
   carga:['30 horas','40 horas','48 horas','Otra'],
   bono:['Mensual','Trimestral','Otro']
 };
@@ -451,6 +457,7 @@ $('f').addEventListener('submit',async e=>{
     experiencia:$('experiencia').value.trim(),
     certificaciones:$('certificaciones').value.trim(),
     competencias:val('competencias').join(', '),
+    turno:one('turno'),
     carga_horaria:parseFloat(one('carga')),
     horario:$('horario').value.trim(),
     descanso:$('descanso').value.trim(),
